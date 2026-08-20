@@ -88,7 +88,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
   const members = useMembers(couple?.members) // 나와 상대방의 닉네임 등 프로필 정보
   const { items: events } = useEvents(couple?.id) // 일정 목록
   const { items: diaryEntries } = useDiaryEntries(couple?.id) // 다이어리 목록
-  const { items: todos } = useTodos(couple?.id) // 버킷리스트 목록
+  const { items: todos } = useTodos(couple?.id) // 위시리스트 목록
   // DashboardBar의 "다가오는 일정"을 클릭했을 때, DayPanel에서 바로 그 일정의 상세를 보여주기 위한 상태입니다.
   const [focusEvent, setFocusEvent] = useState(null)
 

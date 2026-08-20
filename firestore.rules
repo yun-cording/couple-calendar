@@ -53,7 +53,7 @@ service cloud.firestore {
       );
       allow delete: if false; // 커플 스페이스 삭제 기능은 만들지 않았으므로 항상 막아둠
 
-      // couples/{coupleId} 아래의 세 하위 컬렉션(일정/다이어리/버킷리스트)은
+      // couples/{coupleId} 아래의 세 하위 컬렉션(일정/다이어리/위시리스트)은
       // 모두 "이 커플의 멤버인지"만 확인하면 됩니다. (같은 규칙을 재사용)
       match /events/{eventId} {
         allow read, write: if isMember(coupleId);

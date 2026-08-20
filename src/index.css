@@ -850,12 +850,32 @@ textarea:focus {
 }
 .todo-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
   background: var(--surface-alt);
   border-radius: 12px;
   padding: 0.55rem 0.75rem;
+}
+.todo-schedule-row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.todo-schedule-row input[type='date'] {
+  flex: 1;
+  min-width: 0;
+}
+.todo-schedule-row .primary-btn,
+.todo-schedule-row .secondary-btn {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
 }
 .todo-item.done .todo-check span {
   text-decoration: line-through;

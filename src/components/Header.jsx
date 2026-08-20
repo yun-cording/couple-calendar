@@ -1,11 +1,11 @@
-// 화면 맨 위에 항상 보이는 헤더입니다. 로고 + 4개의 탭 버튼(캘린더/다이어리/버킷리스트/설정)으로 구성됩니다.
+// 화면 맨 위에 항상 보이는 헤더입니다. 로고 + 4개의 탭 버튼(캘린더/다이어리/위시리스트/설정)으로 구성됩니다.
 
 import HeartIcon from './HeartIcon'
 
 const TABS = [
   { id: 'calendar', label: '캘린더', icon: '📅' },
   { id: 'diary', label: '다이어리', icon: '📔' },
-  { id: 'bucket', label: '버킷리스트', icon: '💕' },
+  { id: 'bucket', label: '위시리스트', icon: '💕' },
   { id: 'settings', label: '설정', icon: '⚙️' },
 ]
 

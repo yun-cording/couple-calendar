@@ -1,4 +1,4 @@
-// 커플 데이터(일정/다이어리/버킷리스트)를 Firestore에서 실시간으로 읽어오는 커스텀 훅들입니다.
+// 커플 데이터(일정/다이어리/위시리스트)를 Firestore에서 실시간으로 읽어오는 커스텀 훅들입니다.
 // 세 훅 모두 내부적으로는 같은 로직(useSubcollection)을 재사용합니다.
 
 import { useEffect, useState } from 'react'
@@ -50,5 +50,5 @@ function useSubcollection(coupleId, name, orderField) {
 export const useEvents = (coupleId) => useSubcollection(coupleId, 'events', 'date')
 // 다이어리 목록 (날짜순 정렬)
 export const useDiaryEntries = (coupleId) => useSubcollection(coupleId, 'diary', 'date')
-// 버킷리스트 목록 (등록순 정렬)
+// 위시리스트 목록 (등록순 정렬)
 export const useTodos = (coupleId) => useSubcollection(coupleId, 'todos', 'createdAt')
