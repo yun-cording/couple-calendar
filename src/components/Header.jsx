@@ -1,5 +1,7 @@
 // 화면 맨 위에 항상 보이는 헤더입니다. 로고 + 4개의 탭 버튼(캘린더/다이어리/버킷리스트/설정)으로 구성됩니다.
 
+import HeartIcon from './HeartIcon'
+
 const TABS = [
   { id: 'calendar', label: '캘린더', icon: '📅' },
   { id: 'diary', label: '다이어리', icon: '📔' },
@@ -21,7 +23,7 @@ export default function Header({ tab, onTabChange, members, myUid }) {
   return (
     <header className="app-header">
       <div className="app-header-brand">
-        <span className="brand-heart">💗</span>
+        <HeartIcon size={24} />
         <span className="app-header-brand-text">{brandLabel}</span>
       </div>
       <nav className="app-nav">

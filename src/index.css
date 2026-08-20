@@ -224,6 +224,10 @@ a {
 .brand-heart {
   font-size: 2.2rem;
 }
+.brand-heart-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
+}
 .brand h1 {
   margin: 0.3rem 0 0.1rem;
   font-size: 1.6rem;
@@ -493,6 +497,19 @@ textarea:focus {
 .upcoming-pill:hover,
 .upcoming-pill:focus-visible {
   border-color: var(--primary);
+}
+.pill-title-ellipsis {
+  display: inline-block;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+@media (max-width: 480px) {
+  .pill-title-ellipsis {
+    max-width: 72px;
+  }
 }
 .hero-pill .stat-label {
   color: rgba(255, 255, 255, 0.85);

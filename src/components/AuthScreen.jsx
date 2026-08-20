@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../lib/firebase'
+import HeartIcon from './HeartIcon'
 
 export default function AuthScreen() {
   const [mode, setMode] = useState('login') // 'login' 또는 'signup'
@@ -81,7 +82,7 @@ export default function AuthScreen() {
     <div className="center-screen">
       <div className="card auth-card">
         <div className="brand">
-          <span className="brand-heart">💗</span>
+          <HeartIcon size={48} />
           <h1>Us.</h1>
           <p className="muted">우리 둘만의 캘린더</p>
         </div>

@@ -28,10 +28,10 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
     .map((e) => ({ ...e, occursOn: nextYearlyOccurrence(e.date, today) }))
     .sort((a, b) => a.occursOn - b.occursOn)[0] // 날짜가 가장 빠른 것 하나만 사용
 
-  // 반복되지 않는 일반 일정 중에서, 오늘부터 3일 뒤까지(오늘 포함) 시작하는 것 중 가장 가까운 것을 찾습니다.
-  const oneOffFuture = events
+  // 반복되지 않는 일반 일정 중에서, 오늘부터 3일 뒤까지(오늘 포함) 시작하는 것을 전부 날짜순으로 찾습니다.
+  const upcomingEvents = events
     .filter((e) => !e.yearly && diffInDays(today, parseDateKey(e.date)) >= 0 && diffInDays(today, parseDateKey(e.date)) <= 3)
-    .sort((a, b) => a.date.localeCompare(b.date))[0]
+    .sort((a, b) => a.date.localeCompare(b.date))
 
   const memberList = Object.values(members)
   const selectedMember = selectedMemberId ? members[selectedMemberId] : null
@@ -59,20 +59,24 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
         </div>
       )}
 
-      {oneOffFuture && (
+      {/* 오늘부터 3일 뒤까지 예정된 일정을 각각 카드로 보여줍니다. 제목이 길면 모바일에서 "..."으로 줄여 보여줍니다 */}
+      {upcomingEvents.map((ev) => (
         <div
+          key={ev.id}
           className="stat-pill upcoming-pill"
           role="button"
           tabIndex={0}
-          onClick={() => onSelectEvent?.(oneOffFuture)}
+          onClick={() => onSelectEvent?.(ev)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') onSelectEvent?.(oneOffFuture)
+            if (e.key === 'Enter' || e.key === ' ') onSelectEvent?.(ev)
           }}
         >
-          <span className="stat-label">다가오는 일정 · {oneOffFuture.title}</span>
-          <span className="stat-value">{formatFullDate(parseDateKey(oneOffFuture.date))}</span>
+          <span className="stat-label">
+            다가오는 일정 · <span className="pill-title-ellipsis">{ev.title}</span>
+          </span>
+          <span className="stat-value">{formatFullDate(parseDateKey(ev.date))}</span>
         </div>
-      )}
+      ))}
 
       {/* 오른쪽에 나와 상대방의 이름을 배지로 보여줍니다. 클릭하면 그 사람이 등록한 일정 목록을 볼 수 있어요 */}
       <div className="member-avatars">
