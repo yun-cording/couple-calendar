@@ -1,7 +1,9 @@
 // 화면 상단에 보이는 요약 정보 바입니다.
 // "사귄 지 며칠째"(D+n), "다음 기념일까지 며칠"(D-n), "다가오는 일정" 세 가지를 보여줍니다.
 
+import { useState } from 'react'
 import { diffInDays, formatFullDate, nextYearlyOccurrence, parseDateKey } from '../lib/dateUtils'
+import { categoryById } from '../lib/categories'
 
 // startDate: 커플이 설정한 "사귀기 시작한 날" ('YYYY-MM-DD' 문자열, 없으면 null)
 // events: 전체 일정 목록
@@ -9,6 +11,9 @@ import { diffInDays, formatFullDate, nextYearlyOccurrence, parseDateKey } from '
 // myUid: 현재 로그인한 사용자의 uid
 // onSelectUpcoming: "다가오는 일정" 카드를 클릭했을 때 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
 export default function DashboardBar({ startDate, events, members, myUid, onSelectUpcoming }) {
+  // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
+  const [selectedMemberId, setSelectedMemberId] = useState(null)
+
   const today = new Date()
   today.setHours(0, 0, 0, 0) // 시/분/초를 0으로 맞춰서 "날짜"만 비교하기 쉽게 만듭니다.
 
@@ -28,6 +33,11 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
     .sort((a, b) => a.date.localeCompare(b.date))[0]
 
   const memberList = Object.values(members)
+  const selectedMember = selectedMemberId ? members[selectedMemberId] : null
+  // 선택된 사람이 등록한(authorId가 일치하는) 일정만 걸러서, 날짜순으로 보여줍니다.
+  const selectedMemberEvents = selectedMemberId
+    ? events.filter((e) => e.authorId === selectedMemberId).sort((a, b) => a.date.localeCompare(b.date))
+    : []
 
   return (
     <div className="dashboard-bar">
@@ -61,14 +71,63 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
         </div>
       )}
 
-      {/* 오른쪽에 나와 상대방의 이름을 배지로 보여줍니다 */}
+      {/* 오른쪽에 나와 상대방의 이름을 배지로 보여줍니다. 클릭하면 그 사람이 등록한 일정 목록을 볼 수 있어요 */}
       <div className="member-avatars">
         {memberList.map((m) => (
-          <span key={m.id} className={`avatar-chip ${m.id === myUid ? 'me' : ''}`} title={m.displayName}>
+          <button
+            key={m.id}
+            type="button"
+            className={`avatar-chip ${m.id === myUid ? 'me' : ''}`}
+            title={`${m.displayName || '♡'}님이 등록한 일정 보기`}
+            onClick={() => setSelectedMemberId(m.id)}
+          >
             {m.displayName || '♡'}
-          </span>
+          </button>
         ))}
       </div>
+
+      {/* 이름 배지를 클릭하면 그 사람이 등록한 일정 목록을 팝업으로 보여줍니다 */}
+      {selectedMember && (
+        <div className="day-panel-backdrop" onClick={() => setSelectedMemberId(null)}>
+          <div className="card day-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="day-panel-header">
+              <h2>{selectedMember.displayName || '상대방'}님의 일정</h2>
+              <button className="icon-btn" onClick={() => setSelectedMemberId(null)}>
+                ✕
+              </button>
+            </div>
+
+            {selectedMemberEvents.length === 0 && (
+              <p className="muted small">등록한 일정이 없어요.</p>
+            )}
+
+            <ul className="event-list">
+              {selectedMemberEvents.map((ev) => (
+                <li key={ev.id} className="event-item">
+                  <span
+                    className="event-color-dot"
+                    style={{ background: ev.color || categoryById(ev.category).color }}
+                  />
+                  <div className="event-item-body">
+                    <div className="event-item-title" style={{ color: ev.color || categoryById(ev.category).color }}>
+                      <span className="event-time">
+                        {formatFullDate(parseDateKey(ev.date))}
+                        {(ev.timeFrom || ev.time) && ` · ${ev.timeFrom || ev.time}`}
+                      </span>
+                      {ev.title}
+                      {ev.yearly && <span className="badge">매년</span>}
+                    </div>
+                    {ev.dateTo && ev.dateTo !== ev.date && (
+                      <div className="event-item-sub">🗓️ ~ {formatFullDate(parseDateKey(ev.dateTo))}</div>
+                    )}
+                    {ev.location && <div className="event-item-sub">📍 {ev.location}</div>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

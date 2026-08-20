@@ -412,6 +412,13 @@ textarea:focus {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.app-header-brand-text {
+  /* 지금 고른 테마(라이트/다크/봄/여름/가을/겨울)의 포인트 색으로 그라데이션을 입힙니다 */
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 .app-nav {
   display: flex;

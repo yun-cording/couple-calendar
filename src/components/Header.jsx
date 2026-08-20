@@ -22,7 +22,7 @@ export default function Header({ tab, onTabChange, members, myUid }) {
     <header className="app-header">
       <div className="app-header-brand">
         <span className="brand-heart">💗</span>
-        <span>{brandLabel}</span>
+        <span className="app-header-brand-text">{brandLabel}</span>
       </div>
       <nav className="app-nav">
         {/* TABS 배열을 돌면서 버튼을 자동으로 만들어줍니다 (하드코딩 없이) */}
