@@ -578,7 +578,9 @@ textarea:focus {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* 1fr만 쓰면 칸 너비의 기본 최소값이 "내용의 최소 너비"가 되어, 긴 일정 제목이 있으면
+     모바일 화면에서 달력 전체가 옆으로 밀려납니다. minmax(0, 1fr)로 최소 너비를 0으로 고정합니다 */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 3px;
 }
 .day-cell {
@@ -592,6 +594,7 @@ textarea:focus {
   gap: 2px;
   position: relative;
   min-height: 64px;
+  min-width: 0;
 }
 .day-cell:hover {
   background: var(--surface-alt);
