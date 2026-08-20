@@ -498,6 +498,11 @@ textarea:focus {
 .upcoming-pill:focus-visible {
   border-color: var(--primary);
 }
+.upcoming-more-pill {
+  border-style: dashed;
+  color: var(--text-muted);
+  text-align: left;
+}
 .pill-title-ellipsis {
   display: inline-block;
   max-width: 110px;

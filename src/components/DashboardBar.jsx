@@ -14,6 +14,8 @@ import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 export default function DashboardBar({ startDate, events, members, myUid, onSelectEvent }) {
   // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
   const [selectedMemberId, setSelectedMemberId] = useState(null)
+  // "다가오는 일정" 더보기 팝업을 띄우기 위한 상태입니다.
+  const [showUpcomingList, setShowUpcomingList] = useState(false)
 
   const today = new Date()
   today.setHours(0, 0, 0, 0) // 시/분/초를 0으로 맞춰서 "날짜"만 비교하기 쉽게 만듭니다.
@@ -35,12 +37,44 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
 
   const memberList = Object.values(members)
   const selectedMember = selectedMemberId ? members[selectedMemberId] : null
-  // 이 팝업이 열려 있는 동안에는 배경 화면 스크롤을 잠급니다.
-  useBodyScrollLock(!!selectedMember)
+  // 팝업(이름 배지 / 다가오는 일정 더보기) 중 하나라도 열려 있는 동안에는 배경 화면 스크롤을 잠급니다.
+  useBodyScrollLock(!!selectedMember || showUpcomingList)
   // 선택된 사람이 등록한(authorId가 일치하는) 일정만 걸러서, 날짜순으로 보여줍니다.
   const selectedMemberEvents = selectedMemberId
     ? events.filter((e) => e.authorId === selectedMemberId).sort((a, b) => a.date.localeCompare(b.date))
     : []
+
+  // 일정 목록 팝업(이름 배지 팝업 / 다가오는 일정 더보기 팝업)에서 공통으로 쓰는 목록 항목입니다.
+  // 클릭하면 그 팝업은 닫고(onClose), 그 일정의 상세를 보여줍니다.
+  const renderEventItem = (ev, onClose) => (
+    <li
+      key={ev.id}
+      className="event-item"
+      onClick={() => {
+        onClose()
+        onSelectEvent?.(ev)
+      }}
+    >
+      <span
+        className="event-color-dot"
+        style={{ background: ev.color || categoryById(ev.category).color }}
+      />
+      <div className="event-item-body">
+        <div className="event-item-title" style={{ color: ev.color || categoryById(ev.category).color }}>
+          <span className="event-time">
+            {formatFullDate(parseDateKey(ev.date))}
+            {(ev.timeFrom || ev.time) && ` · ${ev.timeFrom || ev.time}`}
+          </span>
+          {ev.title}
+          {ev.yearly && <span className="badge">매년</span>}
+        </div>
+        {ev.dateTo && ev.dateTo !== ev.date && (
+          <div className="event-item-sub">🗓️ ~ {formatFullDate(parseDateKey(ev.dateTo))}</div>
+        )}
+        {ev.location && <div className="event-item-sub">📍 {ev.location}</div>}
+      </div>
+    </li>
+  )
 
   return (
     <div className="dashboard-bar">
@@ -59,24 +93,35 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
         </div>
       )}
 
-      {/* 오늘부터 3일 뒤까지 예정된 일정을 각각 카드로 보여줍니다. 제목이 길면 모바일에서 "..."으로 줄여 보여줍니다 */}
-      {upcomingEvents.map((ev) => (
+      {/* 오늘부터 3일 뒤까지 예정된 일정 중, 가장 가까운 것 하나만 카드로 보여줍니다.
+          (전부 다 카드로 늘어놓으면 모바일에서 화면이 계속 아래로 밀리기 때문에, 나머지는 "더보기" 팝업에서 봅니다) */}
+      {upcomingEvents.length > 0 && (
         <div
-          key={ev.id}
           className="stat-pill upcoming-pill"
           role="button"
           tabIndex={0}
-          onClick={() => onSelectEvent?.(ev)}
+          onClick={() => onSelectEvent?.(upcomingEvents[0])}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') onSelectEvent?.(ev)
+            if (e.key === 'Enter' || e.key === ' ') onSelectEvent?.(upcomingEvents[0])
           }}
         >
           <span className="stat-label">
-            다가오는 일정 · <span className="pill-title-ellipsis">{ev.title}</span>
+            다가오는 일정 · <span className="pill-title-ellipsis">{upcomingEvents[0].title}</span>
           </span>
-          <span className="stat-value">{formatFullDate(parseDateKey(ev.date))}</span>
+          <span className="stat-value">{formatFullDate(parseDateKey(upcomingEvents[0].date))}</span>
         </div>
-      ))}
+      )}
+
+      {upcomingEvents.length > 1 && (
+        <button
+          type="button"
+          className="stat-pill upcoming-pill upcoming-more-pill"
+          onClick={() => setShowUpcomingList(true)}
+        >
+          <span className="stat-label">다가오는 일정 더보기</span>
+          <span className="stat-value">+{upcomingEvents.length - 1} ···</span>
+        </button>
+      )}
 
       {/* 오른쪽에 나와 상대방의 이름을 배지로 보여줍니다. 클릭하면 그 사람이 등록한 일정 목록을 볼 수 있어요 */}
       <div className="member-avatars">
@@ -109,36 +154,24 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
             )}
 
             <ul className="event-list">
-              {selectedMemberEvents.map((ev) => (
-                // 일정을 클릭하면 이 팝업은 닫고, 그 일정의 상세를 보여줍니다.
-                <li
-                  key={ev.id}
-                  className="event-item"
-                  onClick={() => {
-                    setSelectedMemberId(null)
-                    onSelectEvent?.(ev)
-                  }}
-                >
-                  <span
-                    className="event-color-dot"
-                    style={{ background: ev.color || categoryById(ev.category).color }}
-                  />
-                  <div className="event-item-body">
-                    <div className="event-item-title" style={{ color: ev.color || categoryById(ev.category).color }}>
-                      <span className="event-time">
-                        {formatFullDate(parseDateKey(ev.date))}
-                        {(ev.timeFrom || ev.time) && ` · ${ev.timeFrom || ev.time}`}
-                      </span>
-                      {ev.title}
-                      {ev.yearly && <span className="badge">매년</span>}
-                    </div>
-                    {ev.dateTo && ev.dateTo !== ev.date && (
-                      <div className="event-item-sub">🗓️ ~ {formatFullDate(parseDateKey(ev.dateTo))}</div>
-                    )}
-                    {ev.location && <div className="event-item-sub">📍 {ev.location}</div>}
-                  </div>
-                </li>
-              ))}
+              {selectedMemberEvents.map((ev) => renderEventItem(ev, () => setSelectedMemberId(null)))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* "다가오는 일정 더보기"를 클릭하면 3일 이내 일정 전체를 팝업으로 보여줍니다 */}
+      {showUpcomingList && (
+        <div className="day-panel-backdrop" onClick={() => setShowUpcomingList(false)}>
+          <div className="card day-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="day-panel-header">
+              <h2>다가오는 일정</h2>
+              <button className="icon-btn" onClick={() => setShowUpcomingList(false)}>
+                ✕
+              </button>
+            </div>
+            <ul className="event-list">
+              {upcomingEvents.map((ev) => renderEventItem(ev, () => setShowUpcomingList(false)))}
             </ul>
           </div>
         </div>
