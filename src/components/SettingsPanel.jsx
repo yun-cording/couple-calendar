@@ -61,7 +61,7 @@ export default function SettingsPanel({
     setTimeout(() => setSaved(''), 1500)
   }
 
-  // "챙길 기념일" 목록: 생일 등 직접 등록한 yearly 일정 + 스마트 기념일(D+100/N주년/생일)을 합쳐서,
+  // "기념일 추가" 목록: 생일 등 직접 등록한 yearly 일정 + 스마트 기념일(D+50/100/200/300, 생일)을 합쳐서,
   // 오늘 이후로 다가오는 것을 날짜순으로 보여줍니다.
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -88,7 +88,7 @@ export default function SettingsPanel({
   // "전체 다시 챙기기": 개인 선택을 지우고 다시 전체 기념일을 대상으로 되돌립니다.
   const resetTracked = () => updateDoc(doc(db, 'users', user.uid), { trackedAnniversaryIds: null })
 
-  // 기본으로는 서로의 생일 / 만난지 N주년이 자동으로 챙겨지고, 그 외에 직접 챙기고 싶은 기념일을 여기서 추가합니다.
+  // 기본으로는 서로의 생일 / 사귄지 50·100·200·300일이 자동으로 챙겨지고, 그 외에 직접 챙기고 싶은 기념일을 여기서 추가합니다.
   // "매년 반복" 체크 여부에 따라 해마다 돌아오는 기념일인지, 딱 한 번뿐인 날짜인지가 정해져서 저장됩니다.
   const addCustomAnniversary = async (e) => {
     e.preventDefault()
@@ -177,7 +177,7 @@ export default function SettingsPanel({
         </div>
         <p className="muted small">
           체크한 기념일만 내 "다음 기념일" 카드와 알림 배지에 반영돼요. (아무것도 안 바꾸면 전체를 챙겨요)
-          기본으로 서로의 생일과 만난지 N주년은 자동으로 챙겨지고, 그 외에 챙기고 싶은 날짜는 아래에서 직접 추가할 수 있어요.
+          기본으로 서로의 생일과 사귄지 50·100·200·300일은 자동으로 챙겨지고, 그 외에 챙기고 싶은 날짜는 아래에서 직접 추가할 수 있어요.
         </p>
         {upcomingAnniversaries.length === 0 && (
           <p className="muted small">아직 표시할 기념일이 없어요. 사귄 날짜나 생일을 먼저 입력해보세요.</p>

@@ -3,7 +3,7 @@
 
 import { buildMonthGrid, formatYearMonth, isSameDay, toDateKey } from '../lib/dateUtils'
 import { categoryById } from '../lib/categories'
-import { anniversaryLabel, anniversaryMatchesDate } from '../lib/anniversaries'
+import { anniversaryMatchesDate } from '../lib/anniversaries'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -27,7 +27,7 @@ export default function CalendarView({
   onNextMonth,
   onToday,
   events, // 전체 일정 목록
-  smartAnniversaries = [], // 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
+  smartAnniversaries = [], // 사귄 날짜/생일로 자동 계산되는 D+100/생일 목록 (lib/anniversaries.js)
   diaryByDate, // { 'YYYY-MM-DD': 다이어리객체 } 형태의 맵
   onSelectDay, // 날짜 칸을 클릭했을 때 호출되는 함수
   selectedDateKey, // 현재 선택되어 하이라이트된 날짜
@@ -91,8 +91,8 @@ export default function CalendarView({
               {/* 스마트 기념일을 먼저, 그다음 일정을 작은 글자로 최대 2개까지 보여주고, 그 이상은 "+N"으로 표시 */}
               <span className="day-events">
                 {dayAnniversaries.slice(0, 2).map((a) => (
-                  <span key={a.id} className="day-event-label day-anniversary-label" title={anniversaryLabel(a, date)}>
-                    🎉 {anniversaryLabel(a, date)}
+                  <span key={a.id} className="day-event-label day-anniversary-label" title={a.title}>
+                    🎉 {a.title}
                   </span>
                 ))}
                 {dayEvents.slice(0, Math.max(0, 2 - dayAnniversaries.length)).map((ev) => (

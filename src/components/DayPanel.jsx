@@ -16,14 +16,14 @@ import { formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById, MOODS } from '../lib/categories'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { useToast } from '../context/ToastContext'
-import { anniversaryLabel, anniversaryMatchesDate } from '../lib/anniversaries'
+import { anniversaryMatchesDate } from '../lib/anniversaries'
 import EventForm from './EventForm'
 import { eventMatchesDate } from './CalendarView'
 
 // coupleId: Firestore 경로에 쓸 커플 문서 id
 // dateKey: 열려있는 날짜 ('YYYY-MM-DD')
 // events: 전체 일정 목록 (여기서 이 날짜에 해당하는 것만 걸러냄)
-// smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
+// smartAnniversaries: 사귄 날짜/생일로 자동 계산되는 D+100/생일 목록 (lib/anniversaries.js)
 // diaryEntry: 이 날짜의 다이어리 데이터 (없으면 undefined)
 // members: 멤버 프로필 정보 (작성자 이름 표시용)
 // myUid: 로그인한 나의 uid
@@ -116,12 +116,12 @@ export default function DayPanel({
           </button>
         </div>
 
-        {/* 사귄 날짜로 자동 계산된 기념일(D+100, N주년 등)입니다. 직접 만든 일정이 아니라서 수정/삭제는 할 수 없습니다 */}
+        {/* 사귄 날짜/생일로 자동 계산된 기념일(D+100, 생일 등)입니다. 직접 만든 일정이 아니라서 수정/삭제는 할 수 없습니다 */}
         {dayAnniversaries.length > 0 && (
           <div className="day-anniversary-banner">
             {dayAnniversaries.map((a) => (
               <span key={a.id} className="badge">
-                🎉 {anniversaryLabel(a, date)}
+                🎉 {a.title}
               </span>
             ))}
           </div>

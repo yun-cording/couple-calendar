@@ -102,7 +102,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
     return map
   }, [diaryEntries])
 
-  // 사귄 날짜(couple.startDate)로 계산되는 D+100/N주년 + 멤버들이 입력해둔 생일 + 내가 설정에서 직접 추가한
+  // 사귄 날짜(couple.startDate)로 계산되는 D+50/100/200/300 + 멤버들이 입력해둔 생일 + 내가 설정에서 직접 추가한
   // 기념일(profile.customAnniversaries)을 합친 "스마트 기념일" 목록입니다.
   // 자동 계산분은 Firestore에 따로 저장하지 않아서, 사귄 날짜나 생일을 나중에 바꿔도 항상 최신 값으로 맞춰집니다.
   const smartAnniversaries = useMemo(
