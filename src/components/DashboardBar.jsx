@@ -14,6 +14,7 @@ import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 // smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년/생일 목록 (lib/anniversaries.js)
 // trackedAnniversaryIds: 로그인한 나의 "챙길 기념일" 선택 목록 (null이면 전체를 대상으로 함, 설정 화면에서 고름)
 // onSelectEvent: 일정 하나를 선택했을 때(예: "다가오는 일정" 카드, 이름 배지 팝업의 일정 목록) 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
+// onSelectAnniversary: "다음 기념일" 카드를 클릭했을 때 호출되는 함수 (occursOn 날짜를 담은 기념일 객체를 넘겨줍니다)
 export default function DashboardBar({
   startDate,
   events,
@@ -22,6 +23,7 @@ export default function DashboardBar({
   members,
   myUid,
   onSelectEvent,
+  onSelectAnniversary,
 }) {
   // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
   const [selectedMemberId, setSelectedMemberId] = useState(null)
@@ -107,7 +109,15 @@ export default function DashboardBar({
       {/* 다가오는 기념일이 있을 때만 카드를 보여줍니다 (생일 등 직접 등록한 기념일 + 자동 계산된 D+100/N주년 통틀어 가장 가까운 것).
           7일 이내면 은은하게, 3일 이내면 눈에 띄게 강조해서 선물/예약 준비를 미리 챙길 수 있게 합니다 */}
       {upcomingAnniversary && (
-        <div className={`stat-pill ${anniversaryAlertClass}`}>
+        <div
+          className={`stat-pill upcoming-pill ${anniversaryAlertClass}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelectAnniversary?.(upcomingAnniversary)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') onSelectAnniversary?.(upcomingAnniversary)
+          }}
+        >
           <span className="stat-label">
             {anniversaryAlertClass && '🔔 '}다음 기념일 · {upcomingAnniversary.title}
           </span>

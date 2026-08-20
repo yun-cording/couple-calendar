@@ -8,7 +8,7 @@ import { useAuth } from './context/AuthContext'
 import { useCouple } from './context/CoupleContext'
 import { useMembers } from './lib/useMembers'
 import { useEvents, useDiaryEntries, useTodos } from './lib/useCoupleData'
-import { addMonths, diffInDays } from './lib/dateUtils'
+import { addMonths, diffInDays, toDateKey } from './lib/dateUtils'
 import { computeBirthdayAnniversaries, computeSmartAnniversaries, findUpcomingAnniversary } from './lib/anniversaries'
 
 import SetupNotice from './components/SetupNotice'
@@ -167,6 +167,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           members={members}
           myUid={user.uid}
           onSelectEvent={(ev) => openDay(ev.date, ev)}
+          onSelectAnniversary={(a) => openDay(toDateKey(a.occursOn))}
         />
 
         {tab === 'calendar' && (
