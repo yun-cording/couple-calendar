@@ -30,6 +30,10 @@ export default function SettingsPanel({
   const [displayName, setDisplayName] = useState(profile?.displayName || '')
   const [birthDate, setBirthDate] = useState(profile?.birthDate || '')
   const [saved, setSaved] = useState('') // 방금 어떤 항목을 저장했는지 표시용 ('name' | 'anniversary' | 'birth' | '')
+  // 직접 추가하는 기념일 입력값
+  const [customTitle, setCustomTitle] = useState('')
+  const [customDate, setCustomDate] = useState('')
+  const [customYearly, setCustomYearly] = useState(true)
 
   // 사귀기 시작한 날 저장 (couples 문서에 저장 -> 둘 다 같은 값을 보게 됨)
   const saveStartDate = async (e) => {
@@ -77,6 +81,31 @@ export default function SettingsPanel({
 
   // "전체 다시 챙기기": 개인 선택을 지우고 다시 전체 기념일을 대상으로 되돌립니다.
   const resetTracked = () => updateDoc(doc(db, 'users', user.uid), { trackedAnniversaryIds: null })
+
+  // 기본으로는 서로의 생일 / 만난지 N주년이 자동으로 챙겨지고, 그 외에 직접 챙기고 싶은 기념일을 여기서 추가합니다.
+  // "매년 반복" 체크 여부에 따라 해마다 돌아오는 기념일인지, 딱 한 번뿐인 날짜인지가 정해져서 저장됩니다.
+  const addCustomAnniversary = async (e) => {
+    e.preventDefault()
+    if (!customTitle.trim() || !customDate) return
+    const entry = {
+      id: `custom-${crypto.randomUUID()}`,
+      title: customTitle.trim(),
+      date: customDate,
+      yearly: customYearly,
+      kind: 'custom',
+    }
+    await updateDoc(doc(db, 'users', user.uid), {
+      customAnniversaries: [...(profile?.customAnniversaries || []), entry],
+    })
+    setCustomTitle('')
+    setCustomDate('')
+    setCustomYearly(true)
+  }
+
+  const removeCustomAnniversary = (id) =>
+    updateDoc(doc(db, 'users', user.uid), {
+      customAnniversaries: (profile?.customAnniversaries || []).filter((c) => c.id !== id),
+    })
 
   // 초대코드를 새로 발급합니다. (아직 상대방이 참여하지 않았을 때만 의미가 있음)
   const regenerateCode = async () => {
@@ -135,6 +164,7 @@ export default function SettingsPanel({
         </div>
         <p className="muted small">
           체크한 기념일만 내 "다음 기념일" 카드와 알림 배지에 반영돼요. (아무것도 안 바꾸면 전체를 챙겨요)
+          기본으로 서로의 생일과 만난지 N주년은 자동으로 챙겨지고, 그 외에 챙기고 싶은 날짜는 아래에서 직접 추가할 수 있어요.
         </p>
         {upcomingAnniversaries.length === 0 && (
           <p className="muted small">아직 표시할 기념일이 없어요. 사귄 날짜나 생일을 먼저 입력해보세요.</p>
@@ -146,10 +176,46 @@ export default function SettingsPanel({
                 <input type="checkbox" checked={isTracked(a.id)} onChange={() => toggleTracked(a.id)} />
                 <span>{a.title}</span>
               </label>
-              <span className="muted small">{formatFullDate(a.occursOn)}</span>
+              <span className="anniversary-tracker-right">
+                <span className="muted small">{formatFullDate(a.occursOn)}</span>
+                {/* 직접 추가한 기념일만 삭제할 수 있습니다 (자동 계산된 D+100/N주년/생일은 원본 값을 고쳐야 바뀌어요) */}
+                {a.id.startsWith('custom-') && (
+                  <button
+                    className="icon-btn small"
+                    type="button"
+                    onClick={() => removeCustomAnniversary(a.id)}
+                    aria-label="기념일 삭제"
+                  >
+                    🗑
+                  </button>
+                )}
+              </span>
             </li>
           ))}
         </ul>
+
+        {/* 기념일 직접 추가 폼 */}
+        <form className="form-stack anniversary-add-form" onSubmit={addCustomAnniversary}>
+          <input
+            placeholder="기념일 이름 (예: 우리 첫 여행)"
+            value={customTitle}
+            onChange={(e) => setCustomTitle(e.target.value)}
+          />
+          <div className="form-row">
+            <input type="date" value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={customYearly}
+                onChange={(e) => setCustomYearly(e.target.checked)}
+              />
+              매년 반복
+            </label>
+          </div>
+          <button className="secondary-btn" type="submit">
+            기념일 추가
+          </button>
+        </form>
       </div>
 
       <div className="settings-block">

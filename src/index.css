@@ -1051,6 +1051,16 @@ textarea:focus {
 .anniversary-tracker-item input {
   width: auto;
 }
+.anniversary-tracker-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.anniversary-add-form {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
 .theme-picker {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
