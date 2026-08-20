@@ -12,6 +12,9 @@ import { CATEGORIES, categoryById, TEXT_COLORS } from '../lib/categories'
 export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDelete }) {
   // 각 입력값을 useState로 관리합니다. initial이 있으면 그 값으로, 없으면 빈 값으로 시작합니다.
   const [title, setTitle] = useState(initial?.title || '')
+  // 시작일 / 종료일: dateTo가 없으면(예전 데이터거나 하루짜리 일정) 시작일과 같게 시작합니다.
+  const [dateFrom, setDateFrom] = useState(initial?.date || dateKey)
+  const [dateTo, setDateTo] = useState(initial?.dateTo || initial?.date || dateKey)
   // 예전 데이터(initial.time)와의 호환을 위해, timeFrom이 없으면 예전 time 값을 시작 시간으로 채워줍니다.
   const [timeFrom, setTimeFrom] = useState(initial?.timeFrom || initial?.time || '')
   const [timeTo, setTimeTo] = useState(initial?.timeTo || '')
@@ -25,9 +28,12 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!title.trim()) return // 제목이 비어있으면 저장하지 않음
+    // 종료일이 시작일보다 앞서지 않도록 보정합니다.
+    const safeDateTo = dateTo < dateFrom ? dateFrom : dateTo
     onSubmit({
       title: title.trim(),
-      date: dateKey,
+      date: dateFrom,
+      dateTo: safeDateTo,
       timeFrom: timeFrom || null,
       timeTo: timeTo || null,
       category,
@@ -38,14 +44,27 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
     })
   }
 
+  // 시작일을 바꿨는데 종료일보다 뒤로 넘어가면, 종료일도 같이 밀어줍니다.
+  const handleDateFromChange = (value) => {
+    setDateFrom(value)
+    if (dateTo < value) setDateTo(value)
+  }
+
   return (
     <form className="form-stack event-form" onSubmit={handleSubmit}>
       <input placeholder="일정 제목" value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus />
 
       <div className="form-row time-range-row">
-        <input type="time" value={timeFrom} onChange={(e) => setTimeFrom(e.target.value)} />
+        <input type="date" value={dateFrom} onChange={(e) => handleDateFromChange(e.target.value)} required />
         <span className="time-range-sep">~</span>
-        <input type="time" value={timeTo} onChange={(e) => setTimeTo(e.target.value)} />
+        <input type="date" value={dateTo} min={dateFrom} onChange={(e) => setDateTo(e.target.value)} required />
+      </div>
+
+      <div className="form-row time-range-row">
+        {/* step=300초(5분) 단위로만 고를 수 있도록 합니다 */}
+        <input type="time" step="300" value={timeFrom} onChange={(e) => setTimeFrom(e.target.value)} />
+        <span className="time-range-sep">~</span>
+        <input type="time" step="300" value={timeTo} onChange={(e) => setTimeTo(e.target.value)} />
       </div>
 
       <div className="form-row">

@@ -7,7 +7,8 @@ import { diffInDays, formatFullDate, nextYearlyOccurrence, parseDateKey } from '
 // events: 전체 일정 목록
 // members: { uid: {displayName, ...} } 형태의 멤버 정보
 // myUid: 현재 로그인한 사용자의 uid
-export default function DashboardBar({ startDate, events, members, myUid }) {
+// onSelectUpcoming: "다가오는 일정" 카드를 클릭했을 때 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
+export default function DashboardBar({ startDate, events, members, myUid, onSelectUpcoming }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0) // 시/분/초를 0으로 맞춰서 "날짜"만 비교하기 쉽게 만듭니다.
 
@@ -21,9 +22,9 @@ export default function DashboardBar({ startDate, events, members, myUid }) {
     .map((e) => ({ ...e, occursOn: nextYearlyOccurrence(e.date, today) }))
     .sort((a, b) => a.occursOn - b.occursOn)[0] // 날짜가 가장 빠른 것 하나만 사용
 
-  // 반복되지 않는 일반 일정 중에서, 오늘 이후로 예정된 것 중 가장 가까운 것을 찾습니다.
+  // 반복되지 않는 일반 일정 중에서, 오늘부터 3일 뒤까지(오늘 포함) 시작하는 것 중 가장 가까운 것을 찾습니다.
   const oneOffFuture = events
-    .filter((e) => !e.yearly && parseDateKey(e.date) >= today)
+    .filter((e) => !e.yearly && diffInDays(today, parseDateKey(e.date)) >= 0 && diffInDays(today, parseDateKey(e.date)) <= 3)
     .sort((a, b) => a.date.localeCompare(b.date))[0]
 
   const memberList = Object.values(members)
@@ -46,7 +47,15 @@ export default function DashboardBar({ startDate, events, members, myUid }) {
       )}
 
       {oneOffFuture && (
-        <div className="stat-pill">
+        <div
+          className="stat-pill upcoming-pill"
+          role="button"
+          tabIndex={0}
+          onClick={() => onSelectUpcoming?.(oneOffFuture)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') onSelectUpcoming?.(oneOffFuture)
+          }}
+        >
           <span className="stat-label">다가오는 일정 · {oneOffFuture.title}</span>
           <span className="stat-value">{formatFullDate(parseDateKey(oneOffFuture.date))}</span>
         </div>

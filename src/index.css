@@ -465,6 +465,13 @@ textarea:focus {
   color: white;
   border: none;
 }
+.upcoming-pill {
+  cursor: pointer;
+}
+.upcoming-pill:hover,
+.upcoming-pill:focus-visible {
+  border-color: var(--primary);
+}
 .hero-pill .stat-label {
   color: rgba(255, 255, 255, 0.85);
 }

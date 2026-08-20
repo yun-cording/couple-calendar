@@ -24,10 +24,11 @@ import { eventMatchesDate } from './CalendarView'
 // diaryEntry: 이 날짜의 다이어리 데이터 (없으면 undefined)
 // members: 멤버 프로필 정보 (작성자 이름 표시용)
 // myUid: 로그인한 나의 uid
+// initialEditingEvent: 패널이 열리자마자 바로 보여줄 일정 (예: "다가오는 일정" 클릭으로 들어온 경우). 없으면 목록만 보여줍니다.
 // onClose: 패널 닫기
-export default function DayPanel({ coupleId, dateKey, events, diaryEntry, members, myUid, onClose }) {
+export default function DayPanel({ coupleId, dateKey, events, diaryEntry, members, myUid, initialEditingEvent, onClose }) {
   // editingEvent: undefined면 폼 숨김, null이면 "새 일정 추가" 폼, 객체면 "해당 일정 수정" 폼
-  const [editingEvent, setEditingEvent] = useState(undefined)
+  const [editingEvent, setEditingEvent] = useState(() => initialEditingEvent || undefined)
   const [moodDraft, setMoodDraft] = useState(diaryEntry?.mood || '')
   const [textDraft, setTextDraft] = useState(diaryEntry?.text || '')
   const [savingDiary, setSavingDiary] = useState(false)
@@ -141,6 +142,11 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
                     {ev.title}
                     {ev.yearly && <span className="badge">매년</span>}
                   </div>
+                  {ev.dateTo && ev.dateTo !== ev.date && (
+                    <div className="event-item-sub">
+                      🗓️ {formatFullDate(parseDateKey(ev.date))} ~ {formatFullDate(parseDateKey(ev.dateTo))}
+                    </div>
+                  )}
                   {ev.location && <div className="event-item-sub">📍 {ev.location}</div>}
                   {ev.memo && <div className="event-item-sub">{ev.memo}</div>}
                 </div>

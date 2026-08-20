@@ -89,6 +89,8 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
   const { items: events } = useEvents(couple?.id) // 일정 목록
   const { items: diaryEntries } = useDiaryEntries(couple?.id) // 다이어리 목록
   const { items: todos } = useTodos(couple?.id) // 버킷리스트 목록
+  // DashboardBar의 "다가오는 일정"을 클릭했을 때, DayPanel에서 바로 그 일정의 상세를 보여주기 위한 상태입니다.
+  const [focusEvent, setFocusEvent] = useState(null)
 
   // diaryEntries 배열을 { '2026-08-19': {...}, ... } 형태의 객체로 바꿔둡니다.
   // 달력 칸마다 "이 날짜에 다이어리가 있나?"를 빠르게 찾아보기 위해서입니다.
@@ -108,13 +110,27 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
     if (nextTab !== 'calendar') setSelectedDateKey(null)
   }
 
+  // 캘린더 탭으로 이동해서 특정 날짜의 DayPanel을 엽니다.
+  // event가 넘어오면(예: "다가오는 일정" 클릭) 그 일정의 상세를 바로 보여줍니다.
+  const openDay = (dateKey, event = null) => {
+    setTab('calendar')
+    setSelectedDateKey(dateKey)
+    setFocusEvent(event)
+  }
+
   return (
     <div className="app-shell">
       <Header tab={tab} onTabChange={handleTabChange} members={members} myUid={user.uid} />
 
       <main className="app-main">
         {/* 상단 D-day / 다가오는 일정 요약 바는 어떤 탭에서든 항상 보여줍니다 */}
-        <DashboardBar startDate={couple.startDate} events={events} members={members} myUid={user.uid} />
+        <DashboardBar
+          startDate={couple.startDate}
+          events={events}
+          members={members}
+          myUid={user.uid}
+          onSelectUpcoming={(ev) => openDay(ev.date, ev)}
+        />
 
         {tab === 'calendar' && (
           <CalendarView
@@ -125,7 +141,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
             events={events}
             diaryByDate={diaryByDate}
             selectedDateKey={selectedDateKey}
-            onSelectDay={setSelectedDateKey}
+            onSelectDay={openDay}
           />
         )}
 
@@ -133,11 +149,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           <DiaryFeed
             diaryEntries={diaryEntries}
             members={members}
-            onSelectDay={(dateKey) => {
-              // 다이어리 피드에서 항목을 클릭하면 캘린더 탭으로 이동하면서 해당 날짜를 바로 열어줍니다.
-              setTab('calendar')
-              setSelectedDateKey(dateKey)
-            }}
+            onSelectDay={openDay}
           />
         )}
 
@@ -165,7 +177,11 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           diaryEntry={diaryByDate[selectedDateKey]}
           members={members}
           myUid={user.uid}
-          onClose={() => setSelectedDateKey(null)}
+          initialEditingEvent={focusEvent}
+          onClose={() => {
+            setSelectedDateKey(null)
+            setFocusEvent(null)
+          }}
         />
       )}
     </div>

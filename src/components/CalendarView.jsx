@@ -7,16 +7,17 @@ import { categoryById } from '../lib/categories'
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 // 이 일정(event)이 주어진 date(달력 칸의 날짜)에 표시되어야 하는지 판단합니다.
-// event.date는 'YYYY-MM-DD' 형태의 문자열입니다.
+// event.date(시작일)와 event.dateTo(종료일, 없으면 시작일과 같은 하루짜리 일정)는 'YYYY-MM-DD' 형태의 문자열입니다.
 // yearly(매년 반복)가 true면 "연도는 무시하고 월/일만" 같으면 매칭시킵니다.
-// yearly가 false면 연/월/일이 전부 정확히 같아야 매칭시킵니다.
+// yearly가 false면 date~dateTo 기간 안에 드는 모든 날짜에 매칭시킵니다.
 function eventMatchesDate(event, date) {
   if (!event.date) return false
-  const [ey, em, ed] = event.date.split('-').map(Number)
   if (event.yearly) {
+    const [, em, ed] = event.date.split('-').map(Number)
     return em === date.getMonth() + 1 && ed === date.getDate()
   }
-  return ey === date.getFullYear() && em === date.getMonth() + 1 && ed === date.getDate()
+  const dateKey = toDateKey(date)
+  return dateKey >= event.date && dateKey <= (event.dateTo || event.date)
 }
 
 export default function CalendarView({
