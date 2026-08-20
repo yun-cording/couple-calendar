@@ -3,7 +3,7 @@
 
 import { buildMonthGrid, formatYearMonth, isSameDay, toDateKey } from '../lib/dateUtils'
 import { categoryById } from '../lib/categories'
-import { anniversaryMatchesDate } from '../lib/anniversaries'
+import { anniversaryLabel, anniversaryMatchesDate } from '../lib/anniversaries'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -91,8 +91,8 @@ export default function CalendarView({
               {/* 스마트 기념일을 먼저, 그다음 일정을 작은 글자로 최대 2개까지 보여주고, 그 이상은 "+N"으로 표시 */}
               <span className="day-events">
                 {dayAnniversaries.slice(0, 2).map((a) => (
-                  <span key={a.id} className="day-event-label day-anniversary-label" title={a.title}>
-                    🎉 {a.title}
+                  <span key={a.id} className="day-event-label day-anniversary-label" title={anniversaryLabel(a, date)}>
+                    🎉 {anniversaryLabel(a, date)}
                   </span>
                 ))}
                 {dayEvents.slice(0, Math.max(0, 2 - dayAnniversaries.length)).map((ev) => (

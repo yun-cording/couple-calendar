@@ -1,5 +1,5 @@
 // "사귄 날짜"(couple.startDate)와 멤버들의 생년월일만으로 계산되는 스마트 기념일 목록입니다.
-// D+100 같은 하루 단위 마일스톤, N주년(해마다 돌아오는), 생일(해마다 돌아오는) 세 종류를 계산해서 돌려줍니다.
+// D+100 같은 하루 단위 마일스톤(한 번뿐), N주년과 생일(둘 다 해마다 돌아옴) 세 종류를 계산해서 돌려줍니다.
 // Firestore에 따로 저장하지 않고 화면을 그릴 때마다 새로 계산하기 때문에,
 // 나중에 사귄 날짜나 생일을 수정해도 항상 최신 값으로 맞춰집니다.
 
@@ -7,12 +7,11 @@ import { addDays, diffInDays, nextYearlyOccurrence, parseDateKey, toDateKey } fr
 
 // 며칠째 되는 날을 기념하고 싶은지 (예: 100일, 200일, 1000일 기념일)
 const DAY_MILESTONES = [50, 100, 200, 300, 500, 777, 1000, 2000, 3000]
-// N주년을 몇 년 뒤까지 미리 계산해둘지
-const MAX_ANNIVERSARY_YEARS = 15
 
 // startDate: 'YYYY-MM-DD' 문자열 (없으면 빈 배열)
 // 반환값: [{ id, title, date('YYYY-MM-DD'), yearly, kind }, ...]
 // yearly가 false면 date에 적힌 그 날짜 딱 한 번만, true면 date의 월/일을 기준으로 해마다 돌아옵니다.
+// N주년(kind: 'anniversary')은 title을 고정값으로 들고 있지 않고, anniversaryLabel()로 그때그때 계산합니다.
 export function computeSmartAnniversaries(startDate) {
   if (!startDate) return []
   const start = parseDateKey(startDate)
@@ -29,16 +28,15 @@ export function computeSmartAnniversaries(startDate) {
     })
   })
 
-  for (let year = 1; year <= MAX_ANNIVERSARY_YEARS; year++) {
-    const date = new Date(start.getFullYear() + year, start.getMonth(), start.getDate())
-    items.push({
-      id: `anniv-${year}`,
-      title: `${year}주년`,
-      date: toDateKey(date),
-      yearly: false,
-      kind: 'anniversary',
-    })
-  }
+  // N주년: 15년까지만 미리 나열하는 대신, 해마다 돌아오는 항목 하나로 표현합니다.
+  // (몇 주년인지는 실제로 표시되는 날짜의 연도에 따라 anniversaryLabel()이 계산합니다)
+  items.push({
+    id: 'anniversary-yearly',
+    title: '주년',
+    date: startDate,
+    yearly: true,
+    kind: 'anniversary',
+  })
 
   return items
 }
@@ -57,6 +55,16 @@ export function computeBirthdayAnniversaries(members) {
     }))
 }
 
+// 스마트 기념일 하나를 특정 날짜(date, Date 객체)에 표시할 때 쓸 제목을 계산합니다.
+// N주년만 연도에 따라 "1주년"/"2주년"처럼 제목이 바뀌고, 나머지는 고정된 title을 그대로 씁니다.
+// N주년은 사귄 날짜 이후(1년째부터)만 의미가 있어서, 시작 연도 자체(0주년)는 null을 돌려줍니다.
+export function anniversaryLabel(anniversary, date) {
+  if (anniversary.kind !== 'anniversary') return anniversary.title
+  const startYear = parseDateKey(anniversary.date).getFullYear()
+  const n = date.getFullYear() - startYear
+  return n >= 1 ? `${n}주년` : null
+}
+
 // 스마트 기념일 하나가 오늘(today) 기준으로 다음에 언제 돌아오는지 계산합니다.
 export function anniversaryOccursOn(anniversary, today) {
   return anniversary.yearly ? nextYearlyOccurrence(anniversary.date, today) : parseDateKey(anniversary.date)
@@ -66,7 +74,9 @@ export function anniversaryOccursOn(anniversary, today) {
 export function anniversaryMatchesDate(anniversary, date) {
   if (anniversary.yearly) {
     const [, m, d] = anniversary.date.split('-').map(Number)
-    return m === date.getMonth() + 1 && d === date.getDate()
+    if (m !== date.getMonth() + 1 || d !== date.getDate()) return false
+    // anniversaryLabel이 null을 돌려주는 경우(예: N주년의 시작 연도)는 표시하지 않습니다.
+    return anniversaryLabel(anniversary, date) !== null
   }
   return anniversary.date === toDateKey(date)
 }
@@ -76,10 +86,13 @@ export function anniversaryMatchesDate(anniversary, date) {
 export function listUpcomingAnniversaries(yearlyEvents, smartAnniversaries, today) {
   const candidates = [
     ...yearlyEvents.map((e) => ({ id: e.id, title: e.title, occursOn: nextYearlyOccurrence(e.date, today) })),
-    ...smartAnniversaries.map((a) => ({ id: a.id, title: a.title, occursOn: anniversaryOccursOn(a, today) })),
+    ...smartAnniversaries.map((a) => {
+      const occursOn = anniversaryOccursOn(a, today)
+      return { id: a.id, title: anniversaryLabel(a, occursOn), occursOn }
+    }),
   ]
   return candidates
-    .filter((a) => diffInDays(today, a.occursOn) >= 0)
+    .filter((a) => a.title !== null && diffInDays(today, a.occursOn) >= 0)
     .sort((a, b) => a.occursOn - b.occursOn)
 }
 

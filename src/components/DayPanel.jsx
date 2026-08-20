@@ -16,7 +16,7 @@ import { formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById, MOODS } from '../lib/categories'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { useToast } from '../context/ToastContext'
-import { anniversaryMatchesDate } from '../lib/anniversaries'
+import { anniversaryLabel, anniversaryMatchesDate } from '../lib/anniversaries'
 import EventForm from './EventForm'
 import { eventMatchesDate } from './CalendarView'
 
@@ -121,7 +121,7 @@ export default function DayPanel({
           <div className="day-anniversary-banner">
             {dayAnniversaries.map((a) => (
               <span key={a.id} className="badge">
-                🎉 {a.title}
+                🎉 {anniversaryLabel(a, date)}
               </span>
             ))}
           </div>
