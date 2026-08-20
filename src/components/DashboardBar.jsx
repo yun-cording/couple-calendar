@@ -2,16 +2,18 @@
 // "사귄 지 며칠째"(D+n), "다음 기념일까지 며칠"(D-n), "다가오는 일정" 세 가지를 보여줍니다.
 
 import { useState } from 'react'
-import { diffInDays, formatFullDate, nextYearlyOccurrence, parseDateKey } from '../lib/dateUtils'
+import { diffInDays, formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById } from '../lib/categories'
+import { findUpcomingAnniversary } from '../lib/anniversaries'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 // startDate: 커플이 설정한 "사귀기 시작한 날" ('YYYY-MM-DD' 문자열, 없으면 null)
 // events: 전체 일정 목록
 // members: { uid: {displayName, ...} } 형태의 멤버 정보
 // myUid: 현재 로그인한 사용자의 uid
+// smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
 // onSelectEvent: 일정 하나를 선택했을 때(예: "다가오는 일정" 카드, 이름 배지 팝업의 일정 목록) 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
-export default function DashboardBar({ startDate, events, members, myUid, onSelectEvent }) {
+export default function DashboardBar({ startDate, events, smartAnniversaries = [], members, myUid, onSelectEvent }) {
   // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
   const [selectedMemberId, setSelectedMemberId] = useState(null)
   // "다가오는 일정" 더보기 팝업을 띄우기 위한 상태입니다.
@@ -23,12 +25,22 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
   // D+n 계산: 사귄 첫날을 1일차로 세기 위해 +1을 해줍니다.
   const daysTogether = startDate ? diffInDays(parseDateKey(startDate), today) + 1 : null
 
-  // yearly(매년 반복) 옵션이 켜진 일정들(생일, 기념일 등) 중에서
-  // 가장 가까운 미래의 발생일을 찾아 "다음 기념일" 카드로 보여줍니다.
+  // yearly(매년 반복) 옵션이 켜진 일정들(생일, 기념일 등)과
+  // 사귄 날짜로 자동 계산된 스마트 기념일(D+100, N주년 등)을 합쳐서,
+  // 가장 가까운 미래의 것 하나를 찾아 "다음 기념일" 카드로 보여줍니다.
   const yearlyEvents = events.filter((e) => e.yearly)
-  const upcomingYearly = yearlyEvents
-    .map((e) => ({ ...e, occursOn: nextYearlyOccurrence(e.date, today) }))
-    .sort((a, b) => a.occursOn - b.occursOn)[0] // 날짜가 가장 빠른 것 하나만 사용
+  const upcomingAnniversary = findUpcomingAnniversary(yearlyEvents, smartAnniversaries, today)
+  const daysUntilAnniversary = upcomingAnniversary ? diffInDays(today, upcomingAnniversary.occursOn) : null
+  // 7일 이내로 다가오면 은은하게, 3일 이내면 눈에 띄게 알려서
+  // 선물이나 예약을 미리 준비할 수 있도록 합니다.
+  const anniversaryAlertClass =
+    daysUntilAnniversary === null
+      ? ''
+      : daysUntilAnniversary <= 3
+        ? 'anniversary-alert-urgent'
+        : daysUntilAnniversary <= 7
+          ? 'anniversary-alert-soon'
+          : ''
 
   // 반복되지 않는 일반 일정 중에서, 오늘부터 3일 뒤까지(오늘 포함) 시작하는 것을 전부 날짜순으로 찾습니다.
   const upcomingEvents = events
@@ -83,13 +95,14 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
         <span className="stat-value">{daysTogether !== null ? `D+${daysTogether}` : '날짜 미설정'}</span>
       </div>
 
-      {/* 다가오는 기념일이 있을 때만 카드를 보여줍니다 */}
-      {upcomingYearly && (
-        <div className="stat-pill">
-          <span className="stat-label">다음 기념일 · {upcomingYearly.title}</span>
-          <span className="stat-value">
-            D-{diffInDays(today, upcomingYearly.occursOn) || '0'}
+      {/* 다가오는 기념일이 있을 때만 카드를 보여줍니다 (생일 등 직접 등록한 기념일 + 자동 계산된 D+100/N주년 통틀어 가장 가까운 것).
+          7일 이내면 은은하게, 3일 이내면 눈에 띄게 강조해서 선물/예약 준비를 미리 챙길 수 있게 합니다 */}
+      {upcomingAnniversary && (
+        <div className={`stat-pill ${anniversaryAlertClass}`}>
+          <span className="stat-label">
+            {anniversaryAlertClass && '🔔 '}다음 기념일 · {upcomingAnniversary.title}
           </span>
+          <span className="stat-value">D-{daysUntilAnniversary || '0'}</span>
         </div>
       )}
 

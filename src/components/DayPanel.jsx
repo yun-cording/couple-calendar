@@ -22,12 +22,23 @@ import { eventMatchesDate } from './CalendarView'
 // coupleId: Firestore 경로에 쓸 커플 문서 id
 // dateKey: 열려있는 날짜 ('YYYY-MM-DD')
 // events: 전체 일정 목록 (여기서 이 날짜에 해당하는 것만 걸러냄)
+// smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
 // diaryEntry: 이 날짜의 다이어리 데이터 (없으면 undefined)
 // members: 멤버 프로필 정보 (작성자 이름 표시용)
 // myUid: 로그인한 나의 uid
 // initialEditingEvent: 패널이 열리자마자 바로 보여줄 일정 (예: "다가오는 일정" 클릭으로 들어온 경우). 없으면 목록만 보여줍니다.
 // onClose: 패널 닫기
-export default function DayPanel({ coupleId, dateKey, events, diaryEntry, members, myUid, initialEditingEvent, onClose }) {
+export default function DayPanel({
+  coupleId,
+  dateKey,
+  events,
+  smartAnniversaries = [],
+  diaryEntry,
+  members,
+  myUid,
+  initialEditingEvent,
+  onClose,
+}) {
   // editingEvent: undefined면 폼 숨김, null이면 "새 일정 추가" 폼, 객체면 "해당 일정 수정" 폼
   const [editingEvent, setEditingEvent] = useState(() => initialEditingEvent || undefined)
   const [moodDraft, setMoodDraft] = useState(diaryEntry?.mood || '')
@@ -46,6 +57,8 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
     .sort((a, b) =>
       (a.timeFrom || a.time || '99:99').localeCompare(b.timeFrom || b.time || '99:99'),
     )
+  // 이 날짜에 해당하는 스마트 기념일 (사귄 날짜로 자동 계산된 것이라 수정/삭제는 할 수 없습니다)
+  const dayAnniversaries = smartAnniversaries.filter((a) => a.date === dateKey)
 
   // 일정 저장: editingEvent에 id가 있으면 "수정"(updateDoc), 없으면 "새로 추가"(addDoc)
   const saveEvent = async (data) => {
@@ -101,6 +114,17 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
             ✕
           </button>
         </div>
+
+        {/* 사귄 날짜로 자동 계산된 기념일(D+100, N주년 등)입니다. 직접 만든 일정이 아니라서 수정/삭제는 할 수 없습니다 */}
+        {dayAnniversaries.length > 0 && (
+          <div className="day-anniversary-banner">
+            {dayAnniversaries.map((a) => (
+              <span key={a.id} className="badge">
+                🎉 {a.title}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* ---------- 일정 섹션 ---------- */}
         <section className="day-panel-section">

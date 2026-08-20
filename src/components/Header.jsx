@@ -13,7 +13,8 @@ const TABS = [
 // onTabChange: 탭 버튼을 눌렀을 때 App.jsx로 알려주는 함수
 // members: { uid: {displayName, ...} } 형태의 멤버 정보
 // myUid: 로그인한 나의 uid
-export default function Header({ tab, onTabChange, members, myUid }) {
+// showAnniversaryBadge: 7일 이내로 다가온 기념일이 있으면 "캘린더" 탭에 빨간 알림 배지를 띄웁니다
+export default function Header({ tab, onTabChange, members, myUid, showAnniversaryBadge }) {
   // "나♥상대방" 형태의 브랜드 라벨을 만듭니다. 아직 이름을 못 불러왔거나 상대방이 없으면 기본 로고를 보여줍니다.
   const me = members?.[myUid]
   const partner = Object.values(members || {}).find((m) => m.id !== myUid)
@@ -34,7 +35,13 @@ export default function Header({ tab, onTabChange, members, myUid }) {
             className={`nav-btn ${tab === t.id ? 'active' : ''}`}
             onClick={() => onTabChange(t.id)}
           >
-            <span className="nav-icon">{t.icon}</span>
+            <span className="nav-icon">
+              {t.icon}
+              {/* 다가오는 기념일이 7일 이내면 캘린더 탭에 알림 배지를 띄웁니다 */}
+              {t.id === 'calendar' && showAnniversaryBadge && (
+                <span className="nav-badge" aria-label="다가오는 기념일 알림" />
+              )}
+            </span>
             <span className="nav-label">{t.label}</span>
           </button>
         ))}

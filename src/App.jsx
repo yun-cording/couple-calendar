@@ -8,7 +8,8 @@ import { useAuth } from './context/AuthContext'
 import { useCouple } from './context/CoupleContext'
 import { useMembers } from './lib/useMembers'
 import { useEvents, useDiaryEntries, useTodos } from './lib/useCoupleData'
-import { addMonths } from './lib/dateUtils'
+import { addMonths, diffInDays } from './lib/dateUtils'
+import { computeSmartAnniversaries, findUpcomingAnniversary } from './lib/anniversaries'
 
 import SetupNotice from './components/SetupNotice'
 import AuthScreen from './components/AuthScreen'
@@ -101,6 +102,22 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
     return map
   }, [diaryEntries])
 
+  // 사귄 날짜(couple.startDate)만으로 계산되는 D+100, N주년 같은 "스마트 기념일" 목록입니다.
+  // Firestore에 저장하지 않고 매번 새로 계산하므로, 사귄 날짜를 나중에 바꿔도 항상 최신 값으로 맞춰집니다.
+  const smartAnniversaries = useMemo(
+    () => computeSmartAnniversaries(couple?.startDate),
+    [couple?.startDate],
+  )
+
+  // 다가오는 기념일이 7일 이내면, 앱을 열자마자 눈에 띄도록 헤더의 "캘린더" 탭에 알림 배지를 띄웁니다.
+  // (서버 푸시 없이 앱 안에서만 보여주는 간단한 알림입니다)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const yearlyEvents = events.filter((e) => e.yearly)
+  const upcomingAnniversary = findUpcomingAnniversary(yearlyEvents, smartAnniversaries, today)
+  const daysUntilAnniversary = upcomingAnniversary ? diffInDays(today, upcomingAnniversary.occursOn) : null
+  const showAnniversaryBadge = daysUntilAnniversary !== null && daysUntilAnniversary <= 7
+
   if (coupleLoading) return <LoadingScreen />
   if (!couple) return <CoupleSetup /> // 혹시 모를 예외 상황(커플 문서가 삭제된 경우 등) 대비
 
@@ -120,13 +137,20 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
 
   return (
     <div className="app-shell">
-      <Header tab={tab} onTabChange={handleTabChange} members={members} myUid={user.uid} />
+      <Header
+        tab={tab}
+        onTabChange={handleTabChange}
+        members={members}
+        myUid={user.uid}
+        showAnniversaryBadge={showAnniversaryBadge}
+      />
 
       <main className="app-main">
         {/* 상단 D-day / 다가오는 일정 요약 바는 어떤 탭에서든 항상 보여줍니다 */}
         <DashboardBar
           startDate={couple.startDate}
           events={events}
+          smartAnniversaries={smartAnniversaries}
           members={members}
           myUid={user.uid}
           onSelectEvent={(ev) => openDay(ev.date, ev)}
@@ -139,6 +163,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
             onNextMonth={() => setMonthDate((d) => addMonths(d, 1))}
             onToday={() => setMonthDate(new Date())}
             events={events}
+            smartAnniversaries={smartAnniversaries}
             diaryByDate={diaryByDate}
             selectedDateKey={selectedDateKey}
             onSelectDay={openDay}
@@ -174,6 +199,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           coupleId={couple.id}
           dateKey={selectedDateKey}
           events={events}
+          smartAnniversaries={smartAnniversaries}
           diaryEntry={diaryByDate[selectedDateKey]}
           members={members}
           myUid={user.uid}

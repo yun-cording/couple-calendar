@@ -458,6 +458,20 @@ textarea:focus {
   background: var(--surface-alt);
   color: var(--primary-dark);
 }
+.nav-icon {
+  position: relative;
+  display: inline-flex;
+}
+.nav-badge {
+  position: absolute;
+  top: -3px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 2px solid var(--surface);
+}
 
 .app-main {
   flex: 1;
@@ -502,6 +516,26 @@ textarea:focus {
   border-style: dashed;
   color: var(--text-muted);
   text-align: left;
+}
+
+/* 기념일이 7일/3일 이내로 다가왔을 때 "다음 기념일" 카드를 강조해서 알려주는 스타일입니다 */
+.anniversary-alert-soon {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+.anniversary-alert-urgent {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface));
+  animation: anniversary-pulse 1.8s ease-in-out infinite;
+}
+@keyframes anniversary-pulse {
+  0%,
+  100% {
+    box-shadow: var(--shadow);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent);
+  }
 }
 .pill-title-ellipsis {
   display: inline-block;
@@ -684,6 +718,11 @@ textarea:focus {
   border-radius: 4px;
   background: var(--surface-alt);
 }
+.day-anniversary-label {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  font-weight: 700;
+}
 .day-mood {
   font-size: 0.75rem;
   position: absolute;
@@ -734,6 +773,18 @@ textarea:focus {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.75rem;
+}
+.day-anniversary-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.day-anniversary-banner .badge {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
 }
 .day-panel-section {
   border-top: 1px solid var(--border);

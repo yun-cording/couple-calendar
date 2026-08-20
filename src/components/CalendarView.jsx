@@ -26,6 +26,7 @@ export default function CalendarView({
   onNextMonth,
   onToday,
   events, // 전체 일정 목록
+  smartAnniversaries = [], // 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
   diaryByDate, // { 'YYYY-MM-DD': 다이어리객체 } 형태의 맵
   onSelectDay, // 날짜 칸을 클릭했을 때 호출되는 함수
   selectedDateKey, // 현재 선택되어 하이라이트된 날짜
@@ -63,6 +64,7 @@ export default function CalendarView({
           const inMonth = date.getMonth() === monthDate.getMonth() // 현재 달에 속한 날짜인지
           const dateKey = toDateKey(date)
           const dayEvents = events.filter((ev) => eventMatchesDate(ev, date)) // 이 날의 일정들
+          const dayAnniversaries = smartAnniversaries.filter((a) => a.date === dateKey) // 이 날의 스마트 기념일
           const diary = diaryByDate[dateKey] // 이 날의 다이어리 (있으면)
           const isToday = isSameDay(date, today)
           const isSelected = dateKey === selectedDateKey
@@ -85,9 +87,14 @@ export default function CalendarView({
                 {date.getDate()}
               </span>
 
-              {/* 일정 제목을 작은 글자로 최대 2개까지 보여주고, 그 이상은 "+N"으로 표시 */}
+              {/* 스마트 기념일을 먼저, 그다음 일정을 작은 글자로 최대 2개까지 보여주고, 그 이상은 "+N"으로 표시 */}
               <span className="day-events">
-                {dayEvents.slice(0, 2).map((ev) => (
+                {dayAnniversaries.slice(0, 2).map((a) => (
+                  <span key={a.id} className="day-event-label day-anniversary-label" title={a.title}>
+                    🎉 {a.title}
+                  </span>
+                ))}
+                {dayEvents.slice(0, Math.max(0, 2 - dayAnniversaries.length)).map((ev) => (
                   <span
                     key={ev.id}
                     className="day-event-label"
@@ -97,7 +104,9 @@ export default function CalendarView({
                     {ev.title}
                   </span>
                 ))}
-                {dayEvents.length > 2 && <span className="event-more">+{dayEvents.length - 2}</span>}
+                {dayAnniversaries.length + dayEvents.length > 2 && (
+                  <span className="event-more">+{dayAnniversaries.length + dayEvents.length - 2}</span>
+                )}
               </span>
 
               {/* 다이어리에 기분(mood)을 남긴 날에는 이모지를 작게 표시 */}
