@@ -113,6 +113,13 @@ export default function SettingsPanel({
       customAnniversaries: (profile?.customAnniversaries || []).filter((c) => c.id !== id),
     })
 
+  // 내가 직접 추가한 기념일을 한 번에 정리합니다. 제목에 "생일"이 들어간 항목은 남겨둡니다.
+  const clearCustomAnniversaries = () => {
+    const kept = (profile?.customAnniversaries || []).filter((c) => c.title.includes('생일'))
+    if (!window.confirm('생일 관련 항목을 제외하고, 내가 추가한 기념일을 전부 삭제할까요?')) return
+    return updateDoc(doc(db, 'users', user.uid), { customAnniversaries: kept })
+  }
+
   // 초대코드를 새로 발급합니다. (아직 상대방이 참여하지 않았을 때만 의미가 있음)
   const regenerateCode = async () => {
     const code = generateInviteCode()
@@ -190,7 +197,12 @@ export default function SettingsPanel({
         {/* 내가 직접 추가한 기념일은 지난 날짜라도(다가오는 목록에 안 보여도) 여기서 전부 삭제할 수 있습니다 */}
         {myCustomAnniversaries.length > 0 && (
           <>
-            <label className="muted small settings-sublabel">내가 추가한 기념일</label>
+            <div className="section-title-row settings-sublabel">
+              <label className="muted small">내가 추가한 기념일</label>
+              <button className="link-btn" type="button" onClick={clearCustomAnniversaries}>
+                전체 삭제 (생일 제외)
+              </button>
+            </div>
             <ul className="anniversary-tracker-list">
               {myCustomAnniversaries.map((c) => (
                 <li key={c.id} className="anniversary-tracker-item">
