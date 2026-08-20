@@ -22,25 +22,25 @@ import DiaryFeed from './components/DiaryFeed'
 import SettingsPanel from './components/SettingsPanel'
 
 export default function App() {
-  // 다크모드 여부는 새로고침해도 유지되도록 localStorage에 저장/조회합니다.
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('us-dark') === '1')
+  // 화면 모드(라이트/다크/봄/여름/가을/겨울)는 새로고침해도 유지되도록 localStorage에 저장/조회합니다.
+  const [theme, setTheme] = useState(() => localStorage.getItem('us-theme') || 'light')
   const [tab, setTab] = useState('calendar') // 현재 선택된 탭: calendar | diary | bucket | settings
   const [monthDate, setMonthDate] = useState(() => new Date()) // 달력에 표시 중인 "월"
   const [selectedDateKey, setSelectedDateKey] = useState(null) // 클릭해서 상세보기 연 날짜 (없으면 null)
 
-  // darkMode 값이 바뀔 때마다 <html> 태그에 data-theme 속성을 붙여줍니다.
-  // index.css에서 이 속성을 보고 다크모드 색상을 적용합니다.
+  // theme 값이 바뀔 때마다 <html> 태그에 data-theme 속성을 붙여줍니다.
+  // index.css에서 이 속성을 보고 각 모드의 색상을 적용합니다.
   useEffect(() => {
-    document.documentElement.dataset.theme = darkMode ? 'dark' : 'light'
-    localStorage.setItem('us-dark', darkMode ? '1' : '0')
-  }, [darkMode])
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('us-theme', theme)
+  }, [theme])
 
   // .env에 Firebase 키를 아직 안 넣었다면, 로그인 화면 대신 설정 안내 화면을 보여줍니다.
   if (!firebaseConfigured) return <SetupNotice />
 
   return <AuthedApp
-    darkMode={darkMode}
-    setDarkMode={setDarkMode}
+    theme={theme}
+    setTheme={setTheme}
     tab={tab}
     setTab={setTab}
     monthDate={monthDate}
@@ -51,7 +51,7 @@ export default function App() {
 }
 
 // 로그인 여부와 커플 연결 여부에 따라 어떤 화면을 보여줄지 결정하는 컴포넌트입니다.
-function AuthedApp({ darkMode, setDarkMode, tab, setTab, monthDate, setMonthDate, selectedDateKey, setSelectedDateKey }) {
+function AuthedApp({ theme, setTheme, tab, setTab, monthDate, setMonthDate, selectedDateKey, setSelectedDateKey }) {
   const { user, profile, loading: authLoading } = useAuth()
 
   if (authLoading) return <LoadingScreen /> // 로그인 여부를 아직 확인 중
@@ -64,8 +64,8 @@ function AuthedApp({ darkMode, setDarkMode, tab, setTab, monthDate, setMonthDate
     <CoupledApp
       user={user}
       profile={profile}
-      darkMode={darkMode}
-      setDarkMode={setDarkMode}
+      theme={theme}
+      setTheme={setTheme}
       tab={tab}
       setTab={setTab}
       monthDate={monthDate}
@@ -77,7 +77,7 @@ function AuthedApp({ darkMode, setDarkMode, tab, setTab, monthDate, setMonthDate
 }
 
 // 로그인 + 커플 연결이 끝난 뒤 보여주는 실제 앱 화면(헤더, 캘린더, 탭 등)입니다.
-function CoupledApp({ user, profile, darkMode, setDarkMode, tab, setTab, monthDate, setMonthDate, selectedDateKey, setSelectedDateKey }) {
+function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, setMonthDate, selectedDateKey, setSelectedDateKey }) {
   const { couple, loading: coupleLoading } = useCouple() // 커플 스페이스 문서(couples/{id})
   const members = useMembers(couple?.members) // 나와 상대방의 닉네임 등 프로필 정보
   const { items: events } = useEvents(couple?.id) // 일정 목록
@@ -144,8 +144,8 @@ function CoupledApp({ user, profile, darkMode, setDarkMode, tab, setTab, monthDa
             couple={couple}
             profile={profile}
             user={user}
-            darkMode={darkMode}
-            onToggleDark={() => setDarkMode((v) => !v)}
+            theme={theme}
+            onThemeChange={setTheme}
           />
         )}
       </main>

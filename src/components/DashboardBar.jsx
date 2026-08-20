@@ -52,11 +52,11 @@ export default function DashboardBar({ startDate, events, members, myUid }) {
         </div>
       )}
 
-      {/* 오른쪽에 나와 상대방의 이름 첫 글자를 동그란 배지로 보여줍니다 */}
+      {/* 오른쪽에 나와 상대방의 이름을 배지로 보여줍니다 */}
       <div className="member-avatars">
         {memberList.map((m) => (
           <span key={m.id} className={`avatar-chip ${m.id === myUid ? 'me' : ''}`} title={m.displayName}>
-            {m.displayName?.[0] || '♡'}
+            {m.displayName || '♡'}
           </span>
         ))}
       </div>

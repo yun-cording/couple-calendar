@@ -84,17 +84,19 @@ export default function CalendarView({
                 {date.getDate()}
               </span>
 
-              {/* 일정 색상 점: 최대 3개까지만 보여주고, 그 이상은 "+N"으로 표시 */}
-              <span className="day-marks">
-                {dayEvents.slice(0, 3).map((ev) => (
+              {/* 일정 제목을 작은 글자로 최대 2개까지 보여주고, 그 이상은 "+N"으로 표시 */}
+              <span className="day-events">
+                {dayEvents.slice(0, 2).map((ev) => (
                   <span
                     key={ev.id}
-                    className="event-dot"
-                    style={{ background: categoryById(ev.category).color }}
+                    className="day-event-label"
+                    style={{ color: categoryById(ev.category).color }}
                     title={ev.title}
-                  />
+                  >
+                    {ev.title}
+                  </span>
                 ))}
-                {dayEvents.length > 3 && <span className="event-more">+{dayEvents.length - 3}</span>}
+                {dayEvents.length > 2 && <span className="event-more">+{dayEvents.length - 2}</span>}
               </span>
 
               {/* 다이어리에 기분(mood)을 남긴 날에는 이모지를 작게 표시 */}

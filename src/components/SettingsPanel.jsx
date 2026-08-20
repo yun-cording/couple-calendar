@@ -6,7 +6,17 @@ import { signOut, updateProfile } from 'firebase/auth'
 import { auth, db } from '../lib/firebase'
 import { generateInviteCode } from '../lib/dateUtils'
 
-export default function SettingsPanel({ couple, profile, user, darkMode, onToggleDark }) {
+// 화면 모드 선택지: 기본(라이트) + 다크 + 사계절(봄/여름/가을/겨울) 테마
+const THEME_OPTIONS = [
+  { id: 'light', label: '라이트', icon: '☀️' },
+  { id: 'dark', label: '다크', icon: '🌙' },
+  { id: 'spring', label: '봄', icon: '🌸' },
+  { id: 'summer', label: '여름', icon: '🌊' },
+  { id: 'fall', label: '가을', icon: '🍂' },
+  { id: 'winter', label: '겨울', icon: '❄️' },
+]
+
+export default function SettingsPanel({ couple, profile, user, theme, onThemeChange }) {
   const [startDate, setStartDate] = useState(couple?.startDate || '')
   const [displayName, setDisplayName] = useState(profile?.displayName || '')
   const [saved, setSaved] = useState('') // 방금 어떤 항목을 저장했는지 표시용 ('name' | 'anniversary' | '')
@@ -78,11 +88,20 @@ export default function SettingsPanel({ couple, profile, user, darkMode, onToggl
       </div>
 
       <div className="settings-block">
-        <h3>화면</h3>
-        <label className="checkbox-row">
-          <input type="checkbox" checked={darkMode} onChange={onToggleDark} />
-          다크 모드
-        </label>
+        <h3>화면 모드</h3>
+        <div className="theme-picker">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className={`theme-btn ${theme === opt.id ? 'active' : ''}`}
+              onClick={() => onThemeChange(opt.id)}
+            >
+              <span className="theme-btn-icon">{opt.icon}</span>
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="settings-block">

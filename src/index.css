@@ -31,6 +31,75 @@
   color-scheme: dark;
 }
 
+/* ---------- 사계절 테마 ---------- */
+:root[data-theme='spring'] {
+  --bg: #fef6f8;
+  --bg-gradient: linear-gradient(160deg, #fff0f5 0%, #f2fbe9 100%);
+  --surface: #ffffff;
+  --surface-alt: #fdeef2;
+  --text: #3a2c33;
+  --text-muted: #9a8790;
+  --border: #f6d9e3;
+  --primary: #ff9ebb;
+  --primary-dark: #f2739e;
+  --accent: #a8d98a;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --shadow: 0 10px 30px rgba(255, 158, 187, 0.18);
+  color-scheme: light;
+}
+
+:root[data-theme='summer'] {
+  --bg: #eefbfc;
+  --bg-gradient: linear-gradient(160deg, #e3f7fb 0%, #dff5ff 100%);
+  --surface: #ffffff;
+  --surface-alt: #e4f6fa;
+  --text: #133a45;
+  --text-muted: #5c8791;
+  --border: #c9ecf3;
+  --primary: #12b7c9;
+  --primary-dark: #0e93a2;
+  --accent: #ffd166;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --shadow: 0 10px 30px rgba(18, 183, 201, 0.16);
+  color-scheme: light;
+}
+
+:root[data-theme='fall'] {
+  --bg: #fdf6ee;
+  --bg-gradient: linear-gradient(160deg, #fbf0e2 0%, #f8e4d2 100%);
+  --surface: #fffaf3;
+  --surface-alt: #f6e8d8;
+  --text: #4a2f1f;
+  --text-muted: #97785f;
+  --border: #ecd6b8;
+  --primary: #d4703f;
+  --primary-dark: #b8532a;
+  --accent: #c9a227;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --shadow: 0 10px 30px rgba(212, 112, 63, 0.18);
+  color-scheme: light;
+}
+
+:root[data-theme='winter'] {
+  --bg: #f2f6fb;
+  --bg-gradient: linear-gradient(160deg, #eaf1fb 0%, #e4ecf9 100%);
+  --surface: #ffffff;
+  --surface-alt: #e9eff9;
+  --text: #22303f;
+  --text-muted: #7387a0;
+  --border: #d6e2f0;
+  --primary: #5b8def;
+  --primary-dark: #3c6bd6;
+  --accent: #9fb8e8;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --shadow: 0 10px 30px rgba(91, 141, 239, 0.16);
+  color-scheme: light;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -346,16 +415,18 @@ textarea:focus {
   margin-left: auto;
 }
 .avatar-chip {
-  width: 34px;
   height: 34px;
-  border-radius: 50%;
+  padding: 0 0.7rem;
+  border-radius: 999px;
   background: var(--surface-alt);
   border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  font-size: 0.85rem;
   color: var(--primary-dark);
+  white-space: nowrap;
 }
 .avatar-chip.me {
   border-color: var(--primary);
@@ -415,7 +486,6 @@ textarea:focus {
   gap: 3px;
 }
 .day-cell {
-  aspect-ratio: 1;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 10px;
@@ -425,7 +495,7 @@ textarea:focus {
   padding: 4px 2px;
   gap: 2px;
   position: relative;
-  min-height: 46px;
+  min-height: 64px;
 }
 .day-cell:hover {
   background: var(--surface-alt);
@@ -473,10 +543,31 @@ textarea:focus {
   font-size: 0.6rem;
   color: var(--text-muted);
 }
+.day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+}
+.day-event-label {
+  display: block;
+  width: 100%;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--surface-alt);
+}
 .day-mood {
   font-size: 0.75rem;
   position: absolute;
   bottom: 2px;
+  right: 4px;
 }
 
 /* ---------- Day panel ---------- */
@@ -712,6 +803,33 @@ textarea:focus {
   margin: 0 0 0.5rem;
   font-size: 0.95rem;
 }
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.theme-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.6rem 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.theme-btn-icon {
+  font-size: 1.3rem;
+}
+.theme-btn.active {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+}
+
 .invite-code-box {
   font-size: 1.6rem;
   font-weight: 800;
