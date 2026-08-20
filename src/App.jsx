@@ -9,7 +9,7 @@ import { useCouple } from './context/CoupleContext'
 import { useMembers } from './lib/useMembers'
 import { useEvents, useDiaryEntries, useTodos } from './lib/useCoupleData'
 import { addMonths, diffInDays } from './lib/dateUtils'
-import { computeSmartAnniversaries, findUpcomingAnniversary } from './lib/anniversaries'
+import { computeBirthdayAnniversaries, computeSmartAnniversaries, findUpcomingAnniversary } from './lib/anniversaries'
 
 import SetupNotice from './components/SetupNotice'
 import AuthScreen from './components/AuthScreen'
@@ -102,19 +102,26 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
     return map
   }, [diaryEntries])
 
-  // 사귄 날짜(couple.startDate)만으로 계산되는 D+100, N주년 같은 "스마트 기념일" 목록입니다.
-  // Firestore에 저장하지 않고 매번 새로 계산하므로, 사귄 날짜를 나중에 바꿔도 항상 최신 값으로 맞춰집니다.
+  // 사귄 날짜(couple.startDate)로 계산되는 D+100/N주년 + 멤버들이 입력해둔 생일을 합친 "스마트 기념일" 목록입니다.
+  // Firestore에 따로 저장하지 않고 매번 새로 계산하므로, 사귄 날짜나 생일을 나중에 바꿔도 항상 최신 값으로 맞춰집니다.
   const smartAnniversaries = useMemo(
-    () => computeSmartAnniversaries(couple?.startDate),
-    [couple?.startDate],
+    () => [...computeSmartAnniversaries(couple?.startDate), ...computeBirthdayAnniversaries(members)],
+    [couple?.startDate, members],
   )
 
   // 다가오는 기념일이 7일 이내면, 앱을 열자마자 눈에 띄도록 헤더의 "캘린더" 탭에 알림 배지를 띄웁니다.
   // (서버 푸시 없이 앱 안에서만 보여주는 간단한 알림입니다)
+  // profile.trackedAnniversaryIds가 설정되어 있으면(=설정에서 하나라도 골라뒀으면) 그것만 대상으로 하고,
+  // 아직 아무것도 안 골랐으면(null/undefined) 전체 기념일을 대상으로 합니다.
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const yearlyEvents = events.filter((e) => e.yearly)
-  const upcomingAnniversary = findUpcomingAnniversary(yearlyEvents, smartAnniversaries, today)
+  const upcomingAnniversary = findUpcomingAnniversary(
+    yearlyEvents,
+    smartAnniversaries,
+    today,
+    profile.trackedAnniversaryIds || null,
+  )
   const daysUntilAnniversary = upcomingAnniversary ? diffInDays(today, upcomingAnniversary.occursOn) : null
   const showAnniversaryBadge = daysUntilAnniversary !== null && daysUntilAnniversary <= 7
 
@@ -151,6 +158,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           startDate={couple.startDate}
           events={events}
           smartAnniversaries={smartAnniversaries}
+          trackedAnniversaryIds={profile.trackedAnniversaryIds || null}
           members={members}
           myUid={user.uid}
           onSelectEvent={(ev) => openDay(ev.date, ev)}
@@ -189,6 +197,8 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
             user={user}
             theme={theme}
             onThemeChange={setTheme}
+            events={events}
+            smartAnniversaries={smartAnniversaries}
           />
         )}
       </main>

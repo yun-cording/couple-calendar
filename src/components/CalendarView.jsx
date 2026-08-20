@@ -3,6 +3,7 @@
 
 import { buildMonthGrid, formatYearMonth, isSameDay, toDateKey } from '../lib/dateUtils'
 import { categoryById } from '../lib/categories'
+import { anniversaryMatchesDate } from '../lib/anniversaries'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -64,7 +65,7 @@ export default function CalendarView({
           const inMonth = date.getMonth() === monthDate.getMonth() // 현재 달에 속한 날짜인지
           const dateKey = toDateKey(date)
           const dayEvents = events.filter((ev) => eventMatchesDate(ev, date)) // 이 날의 일정들
-          const dayAnniversaries = smartAnniversaries.filter((a) => a.date === dateKey) // 이 날의 스마트 기념일
+          const dayAnniversaries = smartAnniversaries.filter((a) => anniversaryMatchesDate(a, date)) // 이 날의 스마트 기념일
           const diary = diaryByDate[dateKey] // 이 날의 다이어리 (있으면)
           const isToday = isSameDay(date, today)
           const isSelected = dateKey === selectedDateKey

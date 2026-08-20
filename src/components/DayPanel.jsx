@@ -16,6 +16,7 @@ import { formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById, MOODS } from '../lib/categories'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { useToast } from '../context/ToastContext'
+import { anniversaryMatchesDate } from '../lib/anniversaries'
 import EventForm from './EventForm'
 import { eventMatchesDate } from './CalendarView'
 
@@ -58,7 +59,7 @@ export default function DayPanel({
       (a.timeFrom || a.time || '99:99').localeCompare(b.timeFrom || b.time || '99:99'),
     )
   // 이 날짜에 해당하는 스마트 기념일 (사귄 날짜로 자동 계산된 것이라 수정/삭제는 할 수 없습니다)
-  const dayAnniversaries = smartAnniversaries.filter((a) => a.date === dateKey)
+  const dayAnniversaries = smartAnniversaries.filter((a) => anniversaryMatchesDate(a, date))
 
   // 일정 저장: editingEvent에 id가 있으면 "수정"(updateDoc), 없으면 "새로 추가"(addDoc)
   const saveEvent = async (data) => {

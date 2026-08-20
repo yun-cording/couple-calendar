@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { doc, updateDoc } from 'firebase/firestore'
 import { signOut, updateProfile } from 'firebase/auth'
 import { auth, db } from '../lib/firebase'
-import { generateInviteCode } from '../lib/dateUtils'
+import { formatFullDate, generateInviteCode, parseDateKey } from '../lib/dateUtils'
+import { listUpcomingAnniversaries } from '../lib/anniversaries'
 
 // 화면 모드 선택지: 기본(라이트) + 다크 + 사계절(봄/여름/가을/겨울) 테마
 const THEME_OPTIONS = [
@@ -16,10 +17,19 @@ const THEME_OPTIONS = [
   { id: 'winter', label: '겨울', icon: '❄️' },
 ]
 
-export default function SettingsPanel({ couple, profile, user, theme, onThemeChange }) {
+export default function SettingsPanel({
+  couple,
+  profile,
+  user,
+  theme,
+  onThemeChange,
+  events = [],
+  smartAnniversaries = [],
+}) {
   const [startDate, setStartDate] = useState(couple?.startDate || '')
   const [displayName, setDisplayName] = useState(profile?.displayName || '')
-  const [saved, setSaved] = useState('') // 방금 어떤 항목을 저장했는지 표시용 ('name' | 'anniversary' | '')
+  const [birthDate, setBirthDate] = useState(profile?.birthDate || '')
+  const [saved, setSaved] = useState('') // 방금 어떤 항목을 저장했는지 표시용 ('name' | 'anniversary' | 'birth' | '')
 
   // 사귀기 시작한 날 저장 (couples 문서에 저장 -> 둘 다 같은 값을 보게 됨)
   const saveStartDate = async (e) => {
@@ -38,6 +48,35 @@ export default function SettingsPanel({ couple, profile, user, theme, onThemeCha
     setSaved('name')
     setTimeout(() => setSaved(''), 1500)
   }
+
+  // 생년월일 저장: 저장해두면 해마다 돌아오는 "OO 생일" 기념일이 캘린더에 자동으로 표시됩니다.
+  const saveBirthDate = async (e) => {
+    e.preventDefault()
+    await updateDoc(doc(db, 'users', user.uid), { birthDate: birthDate || null })
+    setSaved('birth')
+    setTimeout(() => setSaved(''), 1500)
+  }
+
+  // "챙길 기념일" 목록: 생일 등 직접 등록한 yearly 일정 + 스마트 기념일(D+100/N주년/생일)을 합쳐서,
+  // 오늘 이후로 다가오는 것을 날짜순으로 보여줍니다.
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const yearlyEvents = events.filter((e) => e.yearly)
+  const upcomingAnniversaries = listUpcomingAnniversaries(yearlyEvents, smartAnniversaries, today)
+
+  // null이면(아직 한 번도 고른 적 없으면) 전체를 챙기는 것으로 간주합니다.
+  const trackedIds = profile?.trackedAnniversaryIds || null
+  const isTracked = (id) => !trackedIds || trackedIds.includes(id)
+
+  // 체크를 하나 바꾸면, 지금 화면에 보이는 전체 목록을 기준으로 그 항목만 넣거나 뺀 새 배열을 저장합니다.
+  const toggleTracked = async (id) => {
+    const base = trackedIds || upcomingAnniversaries.map((a) => a.id)
+    const next = base.includes(id) ? base.filter((x) => x !== id) : [...base, id]
+    await updateDoc(doc(db, 'users', user.uid), { trackedAnniversaryIds: next })
+  }
+
+  // "전체 다시 챙기기": 개인 선택을 지우고 다시 전체 기념일을 대상으로 되돌립니다.
+  const resetTracked = () => updateDoc(doc(db, 'users', user.uid), { trackedAnniversaryIds: null })
 
   // 초대코드를 새로 발급합니다. (아직 상대방이 참여하지 않았을 때만 의미가 있음)
   const regenerateCode = async () => {
@@ -58,6 +97,20 @@ export default function SettingsPanel({ couple, profile, user, theme, onThemeCha
           </button>
         </form>
         {saved === 'name' && <p className="success-text small">저장됐어요!</p>}
+
+        {/* 생년월일을 저장해두면, 해마다 돌아오는 "OO 생일"이 캘린더/다음 기념일에 자동으로 표시됩니다 */}
+        <label className="muted small settings-sublabel">생년월일</label>
+        <form className="form-row" onSubmit={saveBirthDate}>
+          <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          <button className="secondary-btn" type="submit">
+            저장
+          </button>
+        </form>
+        {saved === 'birth' && <p className="success-text small">저장됐어요!</p>}
+        {/* 방금 저장한 값을 다시 보여줘서, 제대로 입력됐는지 바로 확인할 수 있게 합니다 */}
+        {birthDate && (
+          <p className="muted small">🎂 내 생일: {formatFullDate(parseDateKey(birthDate))}</p>
+        )}
       </div>
 
       <div className="settings-block">
@@ -69,6 +122,34 @@ export default function SettingsPanel({ couple, profile, user, theme, onThemeCha
           </button>
         </form>
         {saved === 'anniversary' && <p className="success-text small">저장됐어요!</p>}
+      </div>
+
+      <div className="settings-block">
+        <div className="section-title-row">
+          <h3>챙길 기념일</h3>
+          {trackedIds && (
+            <button className="link-btn" type="button" onClick={resetTracked}>
+              전체 다시 챙기기
+            </button>
+          )}
+        </div>
+        <p className="muted small">
+          체크한 기념일만 내 "다음 기념일" 카드와 알림 배지에 반영돼요. (아무것도 안 바꾸면 전체를 챙겨요)
+        </p>
+        {upcomingAnniversaries.length === 0 && (
+          <p className="muted small">아직 표시할 기념일이 없어요. 사귄 날짜나 생일을 먼저 입력해보세요.</p>
+        )}
+        <ul className="anniversary-tracker-list">
+          {upcomingAnniversaries.map((a) => (
+            <li key={a.id} className="anniversary-tracker-item">
+              <label>
+                <input type="checkbox" checked={isTracked(a.id)} onChange={() => toggleTracked(a.id)} />
+                <span>{a.title}</span>
+              </label>
+              <span className="muted small">{formatFullDate(a.occursOn)}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="settings-block">

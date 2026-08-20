@@ -11,9 +11,18 @@ import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 // events: 전체 일정 목록
 // members: { uid: {displayName, ...} } 형태의 멤버 정보
 // myUid: 현재 로그인한 사용자의 uid
-// smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년 목록 (lib/anniversaries.js)
+// smartAnniversaries: 사귄 날짜로 자동 계산되는 D+100/N주년/생일 목록 (lib/anniversaries.js)
+// trackedAnniversaryIds: 로그인한 나의 "챙길 기념일" 선택 목록 (null이면 전체를 대상으로 함, 설정 화면에서 고름)
 // onSelectEvent: 일정 하나를 선택했을 때(예: "다가오는 일정" 카드, 이름 배지 팝업의 일정 목록) 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
-export default function DashboardBar({ startDate, events, smartAnniversaries = [], members, myUid, onSelectEvent }) {
+export default function DashboardBar({
+  startDate,
+  events,
+  smartAnniversaries = [],
+  trackedAnniversaryIds = null,
+  members,
+  myUid,
+  onSelectEvent,
+}) {
   // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
   const [selectedMemberId, setSelectedMemberId] = useState(null)
   // "다가오는 일정" 더보기 팝업을 띄우기 위한 상태입니다.
@@ -29,7 +38,7 @@ export default function DashboardBar({ startDate, events, smartAnniversaries = [
   // 사귄 날짜로 자동 계산된 스마트 기념일(D+100, N주년 등)을 합쳐서,
   // 가장 가까운 미래의 것 하나를 찾아 "다음 기념일" 카드로 보여줍니다.
   const yearlyEvents = events.filter((e) => e.yearly)
-  const upcomingAnniversary = findUpcomingAnniversary(yearlyEvents, smartAnniversaries, today)
+  const upcomingAnniversary = findUpcomingAnniversary(yearlyEvents, smartAnniversaries, today, trackedAnniversaryIds)
   const daysUntilAnniversary = upcomingAnniversary ? diffInDays(today, upcomingAnniversary.occursOn) : null
   // 7일 이내로 다가오면 은은하게, 3일 이내면 눈에 띄게 알려서
   // 선물이나 예약을 미리 준비할 수 있도록 합니다.
