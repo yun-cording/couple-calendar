@@ -129,7 +129,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
           events={events}
           members={members}
           myUid={user.uid}
-          onSelectUpcoming={(ev) => openDay(ev.date, ev)}
+          onSelectEvent={(ev) => openDay(ev.date, ev)}
         />
 
         {tab === 'calendar' && (

@@ -9,8 +9,8 @@ import { categoryById } from '../lib/categories'
 // events: 전체 일정 목록
 // members: { uid: {displayName, ...} } 형태의 멤버 정보
 // myUid: 현재 로그인한 사용자의 uid
-// onSelectUpcoming: "다가오는 일정" 카드를 클릭했을 때 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
-export default function DashboardBar({ startDate, events, members, myUid, onSelectUpcoming }) {
+// onSelectEvent: 일정 하나를 선택했을 때(예: "다가오는 일정" 카드, 이름 배지 팝업의 일정 목록) 호출되는 함수 (해당 일정 객체를 넘겨줍니다)
+export default function DashboardBar({ startDate, events, members, myUid, onSelectEvent }) {
   // 이름 배지를 클릭했을 때, 그 사람이 등록한 일정 목록 팝업을 띄우기 위한 상태입니다.
   const [selectedMemberId, setSelectedMemberId] = useState(null)
 
@@ -61,9 +61,9 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
           className="stat-pill upcoming-pill"
           role="button"
           tabIndex={0}
-          onClick={() => onSelectUpcoming?.(oneOffFuture)}
+          onClick={() => onSelectEvent?.(oneOffFuture)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') onSelectUpcoming?.(oneOffFuture)
+            if (e.key === 'Enter' || e.key === ' ') onSelectEvent?.(oneOffFuture)
           }}
         >
           <span className="stat-label">다가오는 일정 · {oneOffFuture.title}</span>
@@ -103,7 +103,15 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
 
             <ul className="event-list">
               {selectedMemberEvents.map((ev) => (
-                <li key={ev.id} className="event-item">
+                // 일정을 클릭하면 이 팝업은 닫고, 그 일정의 상세를 보여줍니다.
+                <li
+                  key={ev.id}
+                  className="event-item"
+                  onClick={() => {
+                    setSelectedMemberId(null)
+                    onSelectEvent?.(ev)
+                  }}
+                >
                   <span
                     className="event-color-dot"
                     style={{ background: ev.color || categoryById(ev.category).color }}
