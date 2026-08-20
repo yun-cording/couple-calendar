@@ -15,5 +15,21 @@ export const CATEGORIES = [
 // 혹시 못 찾으면(예: 예전에 쓰다가 삭제된 카테고리) 마지막 항목인 "기타"를 기본값으로 줍니다.
 export const categoryById = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[5]
 
+// 일정 글자 색으로 고를 수 있는, 많이 사용하는 색 12가지입니다. (EventForm의 색상 선택에 사용)
+export const TEXT_COLORS = [
+  { label: '빨강', value: '#ef4444' },
+  { label: '주황', value: '#f97316' },
+  { label: '노랑', value: '#eab308' },
+  { label: '연두', value: '#22c55e' },
+  { label: '민트', value: '#14b8a6' },
+  { label: '하늘', value: '#38bdf8' },
+  { label: '파랑', value: '#3b82f6' },
+  { label: '남색', value: '#6366f1' },
+  { label: '보라', value: '#a855f7' },
+  { label: '분홍', value: '#ec4899' },
+  { label: '갈색', value: '#92400e' },
+  { label: '검정', value: '#475569' },
+]
+
 // 다이어리 작성 시 고를 수 있는 기분 이모지 목록입니다.
 export const MOODS = ['😍', '🥰', '😊', '😐', '😢', '😡', '🥱', '🤒']

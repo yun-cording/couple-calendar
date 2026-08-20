@@ -2,7 +2,7 @@
 // initial 값이 있으면 "수정 모드"(기존 값이 채워짐), 없으면 "새로 추가 모드"로 동작합니다.
 
 import { useState } from 'react'
-import { CATEGORIES, categoryById } from '../lib/categories'
+import { CATEGORIES, categoryById, TEXT_COLORS } from '../lib/categories'
 
 // initial: 수정할 기존 일정 데이터 (새로 추가하는 경우 undefined/null)
 // dateKey: 이 일정이 등록될 날짜 ('YYYY-MM-DD')
@@ -57,15 +57,24 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
             </option>
           ))}
         </select>
-        <label className="color-pick-row" title="일정 글자 색">
-          <span className="muted small">글자 색</span>
-          <input
-            type="color"
-            className="color-input"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-        </label>
+      </div>
+
+      <div className="color-pick-row" title="일정 글자 색">
+        <span className="muted small">글자 색</span>
+        <div className="color-swatch-list">
+          {TEXT_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              className={`color-swatch${color === c.value ? ' color-swatch-selected' : ''}`}
+              style={{ backgroundColor: c.value }}
+              title={c.label}
+              aria-label={c.label}
+              aria-pressed={color === c.value}
+              onClick={() => setColor(c.value)}
+            />
+          ))}
+        </div>
       </div>
 
       <input placeholder="장소 (선택)" value={location} onChange={(e) => setLocation(e.target.value)} />
