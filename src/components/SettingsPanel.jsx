@@ -68,6 +68,12 @@ export default function SettingsPanel({
   const yearlyEvents = events.filter((e) => e.yearly)
   const upcomingAnniversaries = listUpcomingAnniversaries(yearlyEvents, smartAnniversaries, today)
 
+  // 내가 직접 추가한 기념일 전체 (지난 날짜도 포함) — 위 "챙길 기념일" 목록은 다가오는 것만 보여주기 때문에,
+  // 지난 기념일도 삭제할 수 있도록 별도로 전부 보여줍니다.
+  const myCustomAnniversaries = [...(profile?.customAnniversaries || [])].sort((a, b) =>
+    a.date.localeCompare(b.date),
+  )
+
   // null이면(아직 한 번도 고른 적 없으면) 전체를 챙기는 것으로 간주합니다.
   const trackedIds = profile?.trackedAnniversaryIds || null
   const isTracked = (id) => !trackedIds || trackedIds.includes(id)
@@ -176,23 +182,38 @@ export default function SettingsPanel({
                 <input type="checkbox" checked={isTracked(a.id)} onChange={() => toggleTracked(a.id)} />
                 <span>{a.title}</span>
               </label>
-              <span className="anniversary-tracker-right">
-                <span className="muted small">{formatFullDate(a.occursOn)}</span>
-                {/* 직접 추가한 기념일만 삭제할 수 있습니다 (자동 계산된 D+100/N주년/생일은 원본 값을 고쳐야 바뀌어요) */}
-                {a.id.startsWith('custom-') && (
-                  <button
-                    className="icon-btn small"
-                    type="button"
-                    onClick={() => removeCustomAnniversary(a.id)}
-                    aria-label="기념일 삭제"
-                  >
-                    🗑
-                  </button>
-                )}
-              </span>
+              <span className="muted small">{formatFullDate(a.occursOn)}</span>
             </li>
           ))}
         </ul>
+
+        {/* 내가 직접 추가한 기념일은 지난 날짜라도(다가오는 목록에 안 보여도) 여기서 전부 삭제할 수 있습니다 */}
+        {myCustomAnniversaries.length > 0 && (
+          <>
+            <label className="muted small settings-sublabel">내가 추가한 기념일</label>
+            <ul className="anniversary-tracker-list">
+              {myCustomAnniversaries.map((c) => (
+                <li key={c.id} className="anniversary-tracker-item">
+                  <span>
+                    {c.title}
+                    {c.yearly && <span className="badge">매년</span>}
+                  </span>
+                  <span className="anniversary-tracker-right">
+                    <span className="muted small">{formatFullDate(parseDateKey(c.date))}</span>
+                    <button
+                      className="icon-btn small"
+                      type="button"
+                      onClick={() => removeCustomAnniversary(c.id)}
+                      aria-label="기념일 삭제"
+                    >
+                      🗑
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
         {/* 기념일 직접 추가 폼 */}
         <form className="form-stack anniversary-add-form" onSubmit={addCustomAnniversary}>
