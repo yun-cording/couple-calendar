@@ -100,6 +100,36 @@
   color-scheme: light;
 }
 
+/* ---------- 사계절 배경 풍경(scenery) ---------- */
+/* 화면 모드가 봄/여름/가을/겨울일 때만 화면 맨 뒤에 깔리는 일러스트입니다. (App.jsx의 .app-scenery) */
+.app-scenery {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+:root[data-theme='spring'] .app-scenery {
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Cellipse cx='150' cy='250' rx='260' ry='90' fill='%23bfe3a0'/%3E%3Cellipse cx='650' cy='270' rx='320' ry='100' fill='%23a8d98a'/%3E%3Ccircle cx='700' cy='60' r='40' fill='%23ffe08a'/%3E%3Crect x='120' y='150' width='10' height='80' fill='%238a6448'/%3E%3Ccircle cx='125' cy='120' r='45' fill='%23ffb6c9'/%3E%3Ccircle cx='95' cy='140' r='35' fill='%23ffc7d6'/%3E%3Ccircle cx='160' cy='140' r='35' fill='%23ffc7d6'/%3E%3Ccircle cx='300' cy='230' r='6' fill='%23ff9ebb'/%3E%3Ccircle cx='330' cy='245' r='5' fill='%23ff9ebb'/%3E%3Ccircle cx='260' cy='250' r='5' fill='%23ff9ebb'/%3E%3Ccircle cx='480' cy='220' r='5' fill='%23ffffff'/%3E%3Ccircle cx='520' cy='235' r='4' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+:root[data-theme='summer'] .app-scenery {
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Ccircle cx='680' cy='70' r='45' fill='%23ffe27a'/%3E%3Cpath d='M0 200 Q100 180 200 200 T400 200 T600 200 T800 200 V300 H0 Z' fill='%2312b7c9'/%3E%3Cpath d='M0 235 Q100 215 200 235 T400 235 T600 235 T800 235 V300 H0 Z' fill='%230e93a2'/%3E%3Crect x='150' y='150' width='8' height='60' fill='%23a8763f'/%3E%3Cpath d='M154 150 Q120 130 100 145' stroke='%232f8f4e' stroke-width='8' fill='none'/%3E%3Cpath d='M154 150 Q188 130 208 145' stroke='%232f8f4e' stroke-width='8' fill='none'/%3E%3Cpath d='M154 150 Q154 115 140 100' stroke='%232f8f4e' stroke-width='8' fill='none'/%3E%3C/svg%3E");
+}
+:root[data-theme='fall'] .app-scenery {
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Cellipse cx='150' cy='260' rx='280' ry='90' fill='%23e2b06b'/%3E%3Cellipse cx='650' cy='270' rx='320' ry='100' fill='%23d4703f'/%3E%3Crect x='640' y='150' width='12' height='90' fill='%236b4226'/%3E%3Ccircle cx='646' cy='120' r='50' fill='%23d4703f'/%3E%3Ccircle cx='610' cy='140' r='35' fill='%23e08a4f'/%3E%3Ccircle cx='685' cy='140' r='35' fill='%23c9a227'/%3E%3Cellipse cx='300' cy='230' rx='8' ry='5' fill='%23d4703f'/%3E%3Cellipse cx='340' cy='250' rx='8' ry='5' fill='%23c9a227'/%3E%3Cellipse cx='260' cy='245' rx='8' ry='5' fill='%23e08a4f'/%3E%3Cellipse cx='420' cy='260' rx='8' ry='5' fill='%23d4703f'/%3E%3C/svg%3E");
+}
+:root[data-theme='winter'] .app-scenery {
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Cpolygon points='0,220 150,90 300,220' fill='%23c7d7ec'/%3E%3Cpolygon points='120,220 260,60 420,220' fill='%23aebedb'/%3E%3Cpolygon points='60,220 150,110 220,220' fill='%23ffffff' opacity='0.8'/%3E%3Cellipse cx='650' cy='260' rx='320' ry='80' fill='%23eef3fb'/%3E%3Cpolygon points='600,220 620,160 640,220' fill='%233a6b4f'/%3E%3Cpolygon points='595,235 620,175 645,235' fill='%232f5940'/%3E%3Cpolygon points='700,225 718,175 736,225' fill='%233a6b4f'/%3E%3Ccircle cx='120' cy='250' r='4' fill='%23ffffff'/%3E%3Ccircle cx='500' cy='230' r='4' fill='%23ffffff'/%3E%3Ccircle cx='400' cy='200' r='3' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
 * {
   box-sizing: border-box;
 }
@@ -295,6 +325,28 @@ textarea:focus {
   width: auto;
 }
 
+.time-range-row {
+  align-items: center;
+}
+.time-range-sep {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.color-pick-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+.color-input {
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  flex: 0 0 auto;
+}
+
 .error-text {
   color: var(--danger);
   font-size: 0.85rem;
@@ -344,6 +396,10 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .app-nav {
@@ -724,10 +780,14 @@ textarea:focus {
   flex-direction: column;
   gap: 0.4rem;
 }
+.todo-form {
+  margin-bottom: 0.25rem;
+}
 .todo-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 0.5rem;
   background: var(--surface-alt);
   border-radius: 12px;
   padding: 0.55rem 0.75rem;
@@ -738,11 +798,22 @@ textarea:focus {
 }
 .todo-check {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 .todo-check input {
   width: auto;
+  margin-top: 0.25rem;
+}
+.todo-check-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.todo-sub {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
 }
 .todo-meta {
   display: flex;
@@ -788,6 +859,16 @@ textarea:focus {
   margin: 0.2rem 0;
   color: var(--text);
   white-space: pre-wrap;
+}
+.diary-filter-row {
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.diary-filter-row input[type='month'] {
+  flex: 1;
+}
+.diary-filter-row .secondary-btn {
+  flex: 0 0 auto;
 }
 
 /* ---------- Settings ---------- */
@@ -839,6 +920,49 @@ textarea:focus {
   border-radius: 12px;
   padding: 0.8rem;
   margin-bottom: 0.5rem;
+}
+
+/* ---------- Toast 알림 ---------- */
+.toast-stack {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 100;
+  pointer-events: none;
+}
+.toast {
+  background: var(--text);
+  color: var(--bg);
+  padding: 0.65rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.2s ease, toast-out 0.2s ease 2.3s;
+  white-space: nowrap;
+}
+@keyframes toast-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 480px) {

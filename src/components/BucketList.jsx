@@ -7,6 +7,8 @@ import { db } from '../lib/firebase'
 
 export default function BucketList({ coupleId, todos, members, myUid }) {
   const [text, setText] = useState('')
+  const [location, setLocation] = useState('')
+  const [memo, setMemo] = useState('')
 
   // 새 항목 추가
   const add = async (e) => {
@@ -14,11 +16,15 @@ export default function BucketList({ coupleId, todos, members, myUid }) {
     if (!text.trim()) return
     await addDoc(collection(db, 'couples', coupleId, 'todos'), {
       text: text.trim(),
+      location: location.trim(),
+      memo: memo.trim(),
       done: false,
       authorId: myUid,
       createdAt: serverTimestamp(),
     })
     setText('') // 입력창 비우기
+    setLocation('')
+    setMemo('')
   }
 
   // 체크박스를 누르면 done 값을 반대로 뒤집습니다 (true <-> false)
@@ -40,12 +46,24 @@ export default function BucketList({ coupleId, todos, members, myUid }) {
         </span>
       </div>
 
-      <form className="form-row" onSubmit={add}>
+      <form className="form-stack todo-form" onSubmit={add}>
         <input
           placeholder="함께 하고 싶은 일을 적어보세요"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
+        <div className="form-row">
+          <input
+            placeholder="장소 (선택)"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+          <input
+            placeholder="메모 (선택)"
+            value={memo}
+            onChange={(e) => setMemo(e.target.value)}
+          />
+        </div>
         <button className="primary-btn" type="submit">
           추가
         </button>
@@ -81,7 +99,11 @@ function TodoRow({ todo, members, onToggle, onRemove }) {
     <li className={`todo-item ${todo.done ? 'done' : ''}`}>
       <label className="todo-check">
         <input type="checkbox" checked={todo.done} onChange={() => onToggle(todo)} />
-        <span>{todo.text}</span>
+        <div className="todo-check-body">
+          <span>{todo.text}</span>
+          {todo.location && <span className="todo-sub">📍 {todo.location}</span>}
+          {todo.memo && <span className="todo-sub">{todo.memo}</span>}
+        </div>
       </label>
       <div className="todo-meta">
         <span className="muted small">{members[todo.authorId]?.displayName}</span>

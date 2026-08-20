@@ -38,16 +38,22 @@ export default function App() {
   // .env에 Firebase 키를 아직 안 넣었다면, 로그인 화면 대신 설정 안내 화면을 보여줍니다.
   if (!firebaseConfigured) return <SetupNotice />
 
-  return <AuthedApp
-    theme={theme}
-    setTheme={setTheme}
-    tab={tab}
-    setTab={setTab}
-    monthDate={monthDate}
-    setMonthDate={setMonthDate}
-    selectedDateKey={selectedDateKey}
-    setSelectedDateKey={setSelectedDateKey}
-  />
+  return (
+    <>
+      {/* 봄/여름/가을/겨울 모드일 때 배경에 깔리는 계절 풍경 일러스트 (index.css의 .app-scenery 참고) */}
+      <div className="app-scenery" aria-hidden="true" />
+      <AuthedApp
+        theme={theme}
+        setTheme={setTheme}
+        tab={tab}
+        setTab={setTab}
+        monthDate={monthDate}
+        setMonthDate={setMonthDate}
+        selectedDateKey={selectedDateKey}
+        setSelectedDateKey={setSelectedDateKey}
+      />
+    </>
+  )
 }
 
 // 로그인 여부와 커플 연결 여부에 따라 어떤 화면을 보여줄지 결정하는 컴포넌트입니다.
@@ -104,7 +110,7 @@ function CoupledApp({ user, profile, theme, setTheme, tab, setTab, monthDate, se
 
   return (
     <div className="app-shell">
-      <Header tab={tab} onTabChange={handleTabChange} />
+      <Header tab={tab} onTabChange={handleTabChange} members={members} myUid={user.uid} />
 
       <main className="app-main">
         {/* 상단 D-day / 다가오는 일정 요약 바는 어떤 탭에서든 항상 보여줍니다 */}

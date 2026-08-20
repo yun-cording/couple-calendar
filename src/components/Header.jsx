@@ -9,12 +9,20 @@ const TABS = [
 
 // tab: 현재 선택된 탭 id
 // onTabChange: 탭 버튼을 눌렀을 때 App.jsx로 알려주는 함수
-export default function Header({ tab, onTabChange }) {
+// members: { uid: {displayName, ...} } 형태의 멤버 정보
+// myUid: 로그인한 나의 uid
+export default function Header({ tab, onTabChange, members, myUid }) {
+  // "나♥상대방" 형태의 브랜드 라벨을 만듭니다. 아직 이름을 못 불러왔거나 상대방이 없으면 기본 로고를 보여줍니다.
+  const me = members?.[myUid]
+  const partner = Object.values(members || {}).find((m) => m.id !== myUid)
+  const brandLabel =
+    me?.displayName && partner?.displayName ? `${me.displayName}♥${partner.displayName}` : 'Us.'
+
   return (
     <header className="app-header">
       <div className="app-header-brand">
         <span className="brand-heart">💗</span>
-        <span>Us.</span>
+        <span>{brandLabel}</span>
       </div>
       <nav className="app-nav">
         {/* TABS 배열을 돌면서 버튼을 자동으로 만들어줍니다 (하드코딩 없이) */}

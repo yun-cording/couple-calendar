@@ -90,7 +90,7 @@ export default function CalendarView({
                   <span
                     key={ev.id}
                     className="day-event-label"
-                    style={{ color: categoryById(ev.category).color }}
+                    style={{ color: ev.color || categoryById(ev.category).color }}
                     title={ev.title}
                   >
                     {ev.title}

@@ -2,7 +2,7 @@
 // initial 값이 있으면 "수정 모드"(기존 값이 채워짐), 없으면 "새로 추가 모드"로 동작합니다.
 
 import { useState } from 'react'
-import { CATEGORIES } from '../lib/categories'
+import { CATEGORIES, categoryById } from '../lib/categories'
 
 // initial: 수정할 기존 일정 데이터 (새로 추가하는 경우 undefined/null)
 // dateKey: 이 일정이 등록될 날짜 ('YYYY-MM-DD')
@@ -12,8 +12,12 @@ import { CATEGORIES } from '../lib/categories'
 export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDelete }) {
   // 각 입력값을 useState로 관리합니다. initial이 있으면 그 값으로, 없으면 빈 값으로 시작합니다.
   const [title, setTitle] = useState(initial?.title || '')
-  const [time, setTime] = useState(initial?.time || '')
+  // 예전 데이터(initial.time)와의 호환을 위해, timeFrom이 없으면 예전 time 값을 시작 시간으로 채워줍니다.
+  const [timeFrom, setTimeFrom] = useState(initial?.timeFrom || initial?.time || '')
+  const [timeTo, setTimeTo] = useState(initial?.timeTo || '')
   const [category, setCategory] = useState(initial?.category || 'date')
+  // 글자 색: 누가 등록했는지 구분하기 좋도록 자유롭게 고를 수 있습니다. 기본값은 카테고리 색입니다.
+  const [color, setColor] = useState(initial?.color || categoryById(initial?.category || 'date').color)
   const [location, setLocation] = useState(initial?.location || '')
   const [memo, setMemo] = useState(initial?.memo || '')
   const [yearly, setYearly] = useState(initial?.yearly || false)
@@ -24,8 +28,10 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
     onSubmit({
       title: title.trim(),
       date: dateKey,
-      time: time || null,
+      timeFrom: timeFrom || null,
+      timeTo: timeTo || null,
       category,
+      color,
       location: location.trim(),
       memo: memo.trim(),
       yearly,
@@ -36,8 +42,13 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
     <form className="form-stack event-form" onSubmit={handleSubmit}>
       <input placeholder="일정 제목" value={title} onChange={(e) => setTitle(e.target.value)} required autoFocus />
 
+      <div className="form-row time-range-row">
+        <input type="time" value={timeFrom} onChange={(e) => setTimeFrom(e.target.value)} />
+        <span className="time-range-sep">~</span>
+        <input type="time" value={timeTo} onChange={(e) => setTimeTo(e.target.value)} />
+      </div>
+
       <div className="form-row">
-        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         {/* CATEGORIES 배열(lib/categories.js)을 기반으로 select 옵션을 자동 생성합니다 */}
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           {CATEGORIES.map((c) => (
@@ -46,6 +57,15 @@ export default function EventForm({ initial, dateKey, onSubmit, onCancel, onDele
             </option>
           ))}
         </select>
+        <label className="color-pick-row" title="일정 글자 색">
+          <span className="muted small">글자 색</span>
+          <input
+            type="color"
+            className="color-input"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+          />
+        </label>
       </div>
 
       <input placeholder="장소 (선택)" value={location} onChange={(e) => setLocation(e.target.value)} />

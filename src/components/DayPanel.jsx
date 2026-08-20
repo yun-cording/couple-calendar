@@ -14,6 +14,7 @@ import {
 import { db } from '../lib/firebase'
 import { formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById, MOODS } from '../lib/categories'
+import { useToast } from '../context/ToastContext'
 import EventForm from './EventForm'
 import { eventMatchesDate } from './CalendarView'
 
@@ -30,24 +31,30 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
   const [moodDraft, setMoodDraft] = useState(diaryEntry?.mood || '')
   const [textDraft, setTextDraft] = useState(diaryEntry?.text || '')
   const [savingDiary, setSavingDiary] = useState(false)
+  const showToast = useToast()
 
   const date = parseDateKey(dateKey)
   // 이 날짜에 해당하는 일정만 골라서, 시간 순서대로 정렬합니다.
   // 시간이 없는 일정(하루 종일 일정)은 '99:99'로 취급해서 맨 뒤로 보냅니다.
+  // (예전 데이터는 time 필드만 있을 수 있어서 timeFrom이 없으면 time으로 대신합니다)
   const dayEvents = events
     .filter((ev) => eventMatchesDate(ev, date))
-    .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'))
+    .sort((a, b) =>
+      (a.timeFrom || a.time || '99:99').localeCompare(b.timeFrom || b.time || '99:99'),
+    )
 
   // 일정 저장: editingEvent에 id가 있으면 "수정"(updateDoc), 없으면 "새로 추가"(addDoc)
   const saveEvent = async (data) => {
     if (editingEvent && editingEvent.id) {
       await updateDoc(doc(db, 'couples', coupleId, 'events', editingEvent.id), data)
+      showToast('일정이 수정되었어요!')
     } else {
       await addDoc(collection(db, 'couples', coupleId, 'events'), {
         ...data,
         authorId: myUid, // 누가 등록했는지 기록
         createdAt: serverTimestamp(), // Firebase 서버 시각으로 자동 기록
       })
+      showToast('일정이 등록되었어요!')
     }
     setEditingEvent(undefined) // 저장 후 폼 닫기
   }
@@ -70,6 +77,7 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
         authorId: myUid,
         updatedAt: serverTimestamp(),
       })
+      showToast('오늘의 기록이 등록되었어요!')
     } finally {
       setSavingDiary(false)
     }
@@ -118,10 +126,18 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
             {dayEvents.map((ev) => (
               // 목록에서 일정을 클릭하면 그 일정의 수정 폼이 열립니다.
               <li key={ev.id} className="event-item" onClick={() => setEditingEvent(ev)}>
-                <span className="event-color-dot" style={{ background: categoryById(ev.category).color }} />
+                <span
+                  className="event-color-dot"
+                  style={{ background: ev.color || categoryById(ev.category).color }}
+                />
                 <div className="event-item-body">
-                  <div className="event-item-title">
-                    {ev.time && <span className="event-time">{ev.time}</span>}
+                  <div className="event-item-title" style={{ color: ev.color || categoryById(ev.category).color }}>
+                    {(ev.timeFrom || ev.time) && (
+                      <span className="event-time">
+                        {ev.timeFrom || ev.time}
+                        {ev.timeTo && ` ~ ${ev.timeTo}`}
+                      </span>
+                    )}
                     {ev.title}
                     {ev.yearly && <span className="badge">매년</span>}
                   </div>
