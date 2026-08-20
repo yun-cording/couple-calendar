@@ -1,0 +1,12 @@
+{
+  "name": "Us. 우리 커플 캘린더",
+  "short_name": "Us.",
+  "description": "커플이 함께 쓰는 일정, 기념일, 다이어리 캘린더",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff5f7",
+  "theme_color": "#ff6f91",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
