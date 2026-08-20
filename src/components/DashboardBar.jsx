@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { diffInDays, formatFullDate, nextYearlyOccurrence, parseDateKey } from '../lib/dateUtils'
 import { categoryById } from '../lib/categories'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 // startDate: 커플이 설정한 "사귀기 시작한 날" ('YYYY-MM-DD' 문자열, 없으면 null)
 // events: 전체 일정 목록
@@ -34,6 +35,8 @@ export default function DashboardBar({ startDate, events, members, myUid, onSele
 
   const memberList = Object.values(members)
   const selectedMember = selectedMemberId ? members[selectedMemberId] : null
+  // 이 팝업이 열려 있는 동안에는 배경 화면 스크롤을 잠급니다.
+  useBodyScrollLock(!!selectedMember)
   // 선택된 사람이 등록한(authorId가 일치하는) 일정만 걸러서, 날짜순으로 보여줍니다.
   const selectedMemberEvents = selectedMemberId
     ? events.filter((e) => e.authorId === selectedMemberId).sort((a, b) => a.date.localeCompare(b.date))

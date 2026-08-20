@@ -140,6 +140,13 @@ body,
   height: 100%;
 }
 
+html,
+body {
+  /* 좁은 화면(아이폰/갤럭시)에서 어떤 요소가 살짝 넘치더라도 화면 전체가 옆으로 밀리지 않도록 막습니다 */
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Segoe UI', system-ui, -apple-system,
@@ -156,6 +163,7 @@ textarea {
   font-family: inherit;
   font-size: 1rem;
   color: inherit;
+  max-width: 100%;
 }
 
 button {
@@ -176,6 +184,7 @@ a {
 
 .center-screen {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,6 +262,9 @@ a {
 }
 .form-row > * {
   flex: 1;
+  /* 기본값(auto)이면 아이폰/갤럭시의 날짜·시간 입력창이 최소 폭을 고집해서
+     화면 옆으로 넘치는 원인이 되므로, 필요하면 줄어들 수 있게 해줍니다 */
+  min-width: 0;
 }
 
 .field-label {
@@ -386,6 +398,9 @@ textarea:focus {
 /* ---------- App shell ---------- */
 .app-shell {
   min-height: 100vh;
+  /* 모바일 브라우저는 주소창이 접히고 펼쳐질 때 100vh 기준이 흔들려서 화면이 밀리는 것처럼 보입니다.
+     100dvh(동적 뷰포트 높이)를 지원하는 브라우저에서는 이 값이 덮어씁니다 */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }

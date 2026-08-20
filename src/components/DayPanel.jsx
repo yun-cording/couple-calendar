@@ -14,6 +14,7 @@ import {
 import { db } from '../lib/firebase'
 import { formatFullDate, parseDateKey } from '../lib/dateUtils'
 import { categoryById, MOODS } from '../lib/categories'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { useToast } from '../context/ToastContext'
 import EventForm from './EventForm'
 import { eventMatchesDate } from './CalendarView'
@@ -33,6 +34,8 @@ export default function DayPanel({ coupleId, dateKey, events, diaryEntry, member
   const [textDraft, setTextDraft] = useState(diaryEntry?.text || '')
   const [savingDiary, setSavingDiary] = useState(false)
   const showToast = useToast()
+  // 이 패널이 열려 있는 동안(=마운트되어 있는 동안)에는 배경 화면 스크롤을 잠급니다.
+  useBodyScrollLock(true)
 
   const date = parseDateKey(dateKey)
   // 이 날짜에 해당하는 일정만 골라서, 시간 순서대로 정렬합니다.
