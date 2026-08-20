@@ -1,5 +1,6 @@
 // 앱의 진입점(entry point)입니다. index.html의 <div id="root"></div> 안에
 // React 앱 전체를 그려 넣는(render) 역할을 합니다.
+// (훅 테스트용 주석: 자동 커밋/푸시/빌드/배포 파이프라인 동작 확인)
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
